@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- в адресе приложения сотрудника — личный токен; не передаём его другим сайтам -->
+<meta name="referrer" content="no-referrer">
 <title>Yaponamama — работа</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data.js"></script>
@@ -108,6 +110,27 @@
     opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none;
   }
   .toast.show { opacity: 1; transform: none; }
+  .toast.ok { background: #1f9d55; }
+
+  /* приложение сотрудника */
+  .tile.off { opacity: .5; }
+  .tile .badge { font-size: 12px; opacity: .8; }
+  .who { background: var(--card); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
+  .who .name { font-weight: 600; font-size: 18px; }
+  .who .meta { color: var(--hint); font-size: 14px; }
+  .day { display: flex; justify-content: space-between; align-items: center; background: var(--card);
+         border-radius: 12px; padding: 13px 16px; margin-bottom: 8px; }
+  .day.today { outline: 2px solid var(--accent); }
+  .day.past { opacity: .5; }
+  .day .time { font-weight: 600; }
+  .day .off { color: var(--hint); }
+  .item { background: var(--card); border-radius: 12px; padding: 12px 16px; margin-bottom: 8px; }
+  .item .top { display: flex; justify-content: space-between; gap: 12px; }
+  .item .st { color: var(--hint); font-size: 14px; white-space: nowrap; }
+  .item .sub { color: var(--hint); font-size: 13px; margin-top: 4px; white-space: pre-line; }
+  .big-num { font-size: 32px; font-weight: 700; }
+  .chip:disabled { opacity: .45; }
+  .loading { color: var(--hint); text-align: center; padding: 40px 0; }
 </style>
 </head>
 <body>
@@ -158,9 +181,10 @@ function setBottom(label, onClick) {
 }
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ok = false) {
   const n = document.getElementById("toast");
   n.textContent = msg;
+  n.classList.toggle("ok", ok);
   n.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => n.classList.remove("show"), 2600);
@@ -438,7 +462,267 @@ function submit() {
   }
 }
 
-show(home);
+// ======================================================================
+// Приложение сотрудника (?mode=staff&api=<адрес сервера>&t=<личный токен>)
+// ======================================================================
+
+const STAFF = params.get("mode") === "staff";
+const API = (params.get("api") || "").replace(/\/$/, "");
+const TOKEN = params.get("t");
+let ME = null;
+
+async function api(path, body) {
+  const headers = { "Content-Type": "application/json" };
+  if (TOKEN) headers["X-Auth"] = "token " + TOKEN;
+  else if (tg && tg.initData) headers["X-Auth"] = "tma " + tg.initData;
+  let r;
+  try {
+    r = await fetch(API + path, { method: body ? "POST" : "GET", headers, body: body ? JSON.stringify(body) : undefined });
+  } catch (e) {
+    throw { code: "offline" };
+  }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw { code: data.error || "generic", status: r.status };
+  return data;
+}
+
+function errText(e) {
+  if (e.code === "offline") return t("sa_offline");
+  if (e.status === 401 || e.status === 403) return t("sa_auth");
+  for (const key of ["sa_err_" + e.code, e.code]) if (D.texts[lang][key]) return t(key);
+  return t("sa_err_generic");
+}
+
+/** Экран с загрузкой: показывает «…», затем вызывает render(data) или текст ошибки. */
+function loading(title, load, render) {
+  app.append(el("h1", { text: title }));
+  const box = el("div", { class: "loading", text: "…" });
+  app.append(box);
+  const screen = current;
+  load().then((data) => {
+    if (current !== screen) return;  // пользователь уже ушёл с экрана
+    box.remove();
+    render(data);
+  }).catch((e) => { box.textContent = errText(e); });
+}
+
+const WEEKDAYS = { ru: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"], uz: ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"] };
+const todayIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+function dayLabel(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return `${WEEKDAYS[lang][d.getDay()]}, ${iso.slice(8, 10)}.${iso.slice(5, 7)}`;
+}
+const dotsDate = (iso) => iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}` : "";
+const shiftLabel = (s) => s.day_off ? t("day_off") : `${s.start}–${s.end}`;
+
+function staffHome() {
+  app.append(
+    el("div", { class: "who" },
+      el("div", { class: "name", text: ME.name }),
+      el("div", { class: "meta", text: `${ME.position} · 📍 ${ME.branch_name[lang]}` })),
+    el("div", { class: "tiles" },
+      el("button", { class: "tile wide", onclick: () => go(staffSchedule) }, el("span", { class: "big", text: t("sa_schedule") })),
+      el("button", { class: "tile", onclick: () => go(staffSwap) }, el("span", { class: "big", text: t("sa_swap") })),
+      el("button", { class: "tile", onclick: () => go(staffLeave) },
+        el("span", { class: "big", text: t("sa_leave") }),
+        el("small", { text: `${t("sa_vacation_left")}: ${ME.vacation_left} ${t("sa_days")}` })),
+      el("button", { class: "tile off", onclick: () => go(staffSalary) },
+        el("span", { class: "big", text: t("sa_salary") }), el("span", { class: "badge", text: t("sa_soon") })),
+      el("button", { class: "tile", onclick: () => go(staffNews) }, el("span", { class: "big", text: t("sa_news") })),
+      el("button", { class: "tile", onclick: () => go(staffKnowledge) }, el("span", { class: "big", text: t("sa_kb") })),
+      el("button", { class: "tile", onclick: () => go(staffWrite) }, el("span", { class: "big", text: t("sa_write") })),
+    ),
+  );
+}
+
+function staffSchedule() {
+  loading(t("sa_schedule"), () => api("/api/schedule"), ({ shifts }) => {
+    if (!shifts.length) { app.append(el("p", { class: "sub", text: t("sa_no_shifts") })); return; }
+    const now = todayIso();
+    for (const s of shifts) {
+      const cls = "day" + (s.date === now ? " today" : s.date < now ? " past" : "");
+      app.append(el("div", { class: cls },
+        el("span", { text: dayLabel(s.date) + (s.date === now ? ` · ${t("sa_today")}` : "") }),
+        el("span", { class: s.day_off ? "off" : "time", text: shiftLabel(s) })));
+    }
+  });
+}
+
+function staffSwap() {
+  const load = () => Promise.all([api("/api/schedule"), api("/api/colleagues"), api("/api/swaps")]);
+  loading(t("sa_swap"), load, ([{ shifts }, { colleagues }, { swaps }]) => {
+    const pick = { shift: null, colleague: null, theirs: null };
+    const mine = shifts.filter((s) => !s.day_off && s.date >= todayIso());
+    const theirBox = el("div");
+
+    if (!mine.length) app.append(el("p", { class: "sub", text: t("sa_no_future_shifts") }));
+    else {
+      const chips = (items, label, onPick, disabled) => {
+        const box = el("div", { class: "chips" });
+        for (const it of items) {
+          const c = el("button", { class: "chip", type: "button", text: label(it), disabled: disabled ? disabled(it) : false });
+          c.onclick = () => { box.querySelectorAll(".chip").forEach((x) => x.classList.remove("on")); c.classList.add("on"); onPick(it); };
+          box.append(c);
+        }
+        return box;
+      };
+      const renderTheirs = () => {
+        theirBox.replaceChildren();
+        if (!pick.colleague) return;
+        const options = [{ id: null }, ...pick.colleague.shifts];
+        theirBox.append(el("span", { class: "label", text: t("sa_pick_their") }),
+          chips(options, (s) => s.id ? `${dayLabel(s.date)} ${shiftLabel(s)}` : t("sa_just_give"), (s) => { pick.theirs = s.id; }));
+        pick.theirs = undefined;
+      };
+      app.append(
+        el("div", { class: "field" }, el("span", { class: "label", text: t("sa_pick_shift") }),
+          chips(mine, (s) => `${dayLabel(s.date)} ${shiftLabel(s)}`, (s) => { pick.shift = s.id; })),
+        el("div", { class: "field" }, el("span", { class: "label", text: t("sa_pick_colleague") }),
+          chips(colleagues, (c) => `${c.name} · ${c.position}` + (c.in_bot ? "" : ` (${t("sa_not_in_bot")})`),
+            (c) => { pick.colleague = c; renderTheirs(); }, (c) => !c.in_bot)),
+        el("div", { class: "field" }, theirBox),
+      );
+      setBottom(t("sa_swap_send"), async () => {
+        if (!pick.shift || !pick.colleague || pick.theirs === undefined) { haptic("error"); toast(t("app_fix_errors")); return; }
+        try {
+          await api("/api/swaps", { shift_id: pick.shift, colleague_id: pick.colleague.id, their_shift_id: pick.theirs });
+          haptic("success"); toast(t("sa_swap_sent"), true); show(staffSwap);
+        } catch (e) { haptic("error"); toast(errText(e)); }
+      });
+    }
+
+    if (swaps.length) {
+      app.append(el("h2", { text: t("sa_my_swaps") }));
+      for (const s of swaps) {
+        const a = s.mine ? `${dayLabel(s.mine.date)} ${shiftLabel(s.mine)}` : "—";
+        const b = s.theirs ? `${dayLabel(s.theirs.date)} ${shiftLabel(s.theirs)}` : "";
+        app.append(el("div", { class: "item" },
+          el("div", { class: "top" }, el("span", { text: `${s.outgoing ? "→" : "←"} ${s.colleague}` }),
+            el("span", { class: "st", text: t("sa_swap_st_" + s.status) })),
+          el("div", { class: "sub", text: b ? `${a} ⇄ ${b}` : a })));
+      }
+    }
+  });
+}
+
+function staffLeave() {
+  loading(t("sa_leave"), () => api("/api/requests"), ({ vacation_left, requests }) => {
+    const f = { kind: "vacation", date_from: "", date_to: "", reason: "" };
+    const today = todayIso();
+    const toField = el("div", { class: "field" }, el("span", { class: "label", text: t("sa_date_to") }),
+      el("input", { type: "date", min: today, oninput: (e) => { f.date_to = e.target.value; } }));
+    const reasonField = el("div", { class: "field", hidden: true }, el("span", { class: "label", text: t("sa_reason") }),
+      el("textarea", { maxlength: 300, oninput: (e) => { f.reason = e.target.value; } }));
+    const fromInput = el("input", { type: "date", min: today, oninput: (e) => { f.date_from = e.target.value; } });
+    const kinds = el("div", { class: "chips" });
+    for (const k of ["vacation", "dayoff", "sick"]) {
+      const c = el("button", { class: "chip" + (k === f.kind ? " on" : ""), type: "button",
+                               text: t("kind_" + k).replace(/^./, (x) => x.toUpperCase()) });
+      c.onclick = () => {
+        f.kind = k;
+        kinds.querySelectorAll(".chip").forEach((x) => x.classList.remove("on"));
+        c.classList.add("on");
+        toField.hidden = k === "sick";
+        reasonField.hidden = k !== "dayoff";
+        fromInput.min = k === "sick" ? "" : today;  // больничный может начаться раньше
+      };
+      kinds.append(c);
+    }
+    app.append(
+      el("div", { class: "who" }, el("div", { class: "meta", text: t("sa_vacation_left") }),
+        el("div", { class: "big-num", text: `${vacation_left} ${t("sa_days")}` })),
+      el("h2", { text: t("sa_new_request") }),
+      el("div", { class: "field" }, kinds),
+      el("div", { class: "field" }, el("span", { class: "label", text: t("sa_date_from") }), fromInput),
+      toField, reasonField,
+    );
+    setBottom(t("sa_send"), async () => {
+      if (!f.date_from) { haptic("error"); toast(t("err_date")); return; }
+      try {
+        await api("/api/requests", { kind: f.kind, date_from: f.date_from, date_to: f.date_to || f.date_from, reason: f.reason });
+        haptic("success"); toast(t("sa_request_sent"), true); show(staffLeave);
+      } catch (e) { haptic("error"); toast(errText(e)); }
+    });
+    if (requests.length) {
+      app.append(el("h2", { text: t("sa_my_requests") }));
+      for (const r of requests) {
+        const period = r.date_to && r.date_to !== r.date_from
+          ? `${dotsDate(r.date_from)} – ${dotsDate(r.date_to)} (${r.days} ${t("sa_days")})` : dotsDate(r.date_from);
+        app.append(el("div", { class: "item" },
+          el("div", { class: "top" }, el("span", { text: `№${r.id} ${t("kind_" + r.kind)}` }),
+            el("span", { class: "st", text: t("st_" + r.status) })),
+          el("div", { class: "sub", text: period + (r.reason ? `\n${r.reason}` : "") })));
+      }
+    }
+  });
+}
+
+function staffSalary() {
+  app.append(el("h1", { text: t("sa_salary") }), el("p", { class: "note", text: t("sa_salary_soon") }));
+}
+
+function staffNews() {
+  loading(t("sa_news"), () => api("/api/announcements"), ({ announcements }) => {
+    if (!announcements.length) app.append(el("p", { class: "sub", text: t("sa_no_news") }));
+    for (const a of announcements) {
+      app.append(el("div", { class: "item" },
+        el("div", { class: "sub", text: dotsDate(a.date) }),
+        el("div", { style: "white-space: pre-line; margin-top: 6px", text: a.text })));
+    }
+  });
+}
+
+function staffKnowledge() {
+  loading(t("sa_kb"), () => api("/api/knowledge"), ({ articles }) => {
+    app.append(el("div", { class: "list" }, articles.map((a) =>
+      el("button", { class: "row", onclick: () => go(() => staffArticle(a)) }, `${a.icon} ${a.title[lang]}`))));
+  });
+}
+
+function staffArticle(a) {
+  app.append(el("h1", { text: `${a.icon} ${a.title[lang]}` }), el("div", { class: "rich", text: a.body[lang] }));
+  if (a.video) app.append(el("p", {}, el("a", { href: a.video, text: "▶️ Video", onclick: (e) => { e.preventDefault(); openLink(a.video); } })));
+}
+
+function staffWrite() {
+  const f = { to: "hr", anonymous: false, text: "" };
+  const toChips = el("div", { class: "chips" });
+  for (const [k, key] of [["hr", "sa_to_hr"], ["manager", "sa_to_manager"]]) {
+    const c = el("button", { class: "chip" + (k === f.to ? " on" : ""), type: "button", text: t(key) });
+    c.onclick = () => { f.to = k; toChips.querySelectorAll(".chip").forEach((x) => x.classList.remove("on")); c.classList.add("on"); };
+    toChips.append(c);
+  }
+  app.append(
+    el("h1", { text: t("sa_write") }),
+    el("div", { class: "field" }, el("span", { class: "label", text: t("sa_write_to") }), toChips),
+    el("div", { class: "field" }, el("span", { class: "label", text: t("sa_message") }),
+      el("textarea", { maxlength: 2000, style: "min-height: 140px", oninput: (e) => { f.text = e.target.value; } })),
+    el("div", { class: "field" }, el("label", { class: "consent" },
+      el("input", { type: "checkbox", onchange: (e) => { f.anonymous = e.target.checked; } }),
+      el("span", { text: t("sa_anonymous") }))),
+  );
+  setBottom(t("sa_send"), async () => {
+    if (f.text.trim().length < 3) { haptic("error"); toast(t("err_reason")); return; }
+    try {
+      await api("/api/message", f);
+      haptic("success"); toast(t("sa_message_sent"), true); back();
+    } catch (e) { haptic("error"); toast(errText(e)); }
+  });
+}
+
+async function startStaff() {
+  app.replaceChildren(el("div", { class: "loading", text: "…" }));
+  if (!API) { app.replaceChildren(el("p", { class: "note", text: t("sa_auth") })); return; }
+  try {
+    ME = await api("/api/me");
+    if (D.texts[ME.lang]) lang = ME.lang;
+    show(staffHome);
+  } catch (e) {
+    app.replaceChildren(el("p", { class: "note", text: errText(e) }));
+  }
+}
+
+if (STAFF) startStaff(); else show(home);
 </script>
 </body>
 </html>
