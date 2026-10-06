@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yaponamama — работа</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="data.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #111111);
+    --hint: var(--tg-theme-hint-color, #8a8a8e);
+    --card: var(--tg-theme-secondary-bg-color, #f2f2f7);
+    --accent: var(--tg-theme-button-color, #e2231a);
+    --accent-text: var(--tg-theme-button-text-color, #ffffff);
+    --link: var(--tg-theme-link-color, #2481cc);
+    --danger: #e5484d;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tg]) {
+      --bg: #17181c; --text: #f2f2f2; --hint: #8d8f96; --card: #23252b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  #app { max-width: 640px; margin: 0 auto; padding: 16px 16px 104px; }
+  h1 { font-size: 24px; line-height: 1.2; margin: 4px 0 6px; }
+  h2 { font-size: 17px; margin: 28px 0 12px; }
+  .sub { color: var(--hint); margin: 0 0 20px; }
+
+  .hero {
+    border-radius: var(--radius); overflow: hidden; position: relative; margin-bottom: 16px;
+    background: var(--card); aspect-ratio: 16 / 9;
+  }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile {
+    background: var(--card); border: 0; border-radius: var(--radius);
+    padding: 16px; text-align: left; min-height: 84px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .tile.wide { grid-column: 1 / -1; background: var(--accent); color: var(--accent-text); }
+  .tile .big { font-size: 18px; font-weight: 600; }
+  .tile small { opacity: .75; }
+
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; background: var(--card); border: 0; border-radius: 12px;
+    padding: 15px 16px; text-align: left;
+  }
+  .row::after { content: "›"; color: var(--hint); font-size: 22px; line-height: 1; }
+
+  .rich { white-space: pre-line; background: var(--card); border-radius: var(--radius); padding: 16px; }
+  .card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+  .card .name { font-weight: 600; font-size: 17px; margin-bottom: 6px; }
+  .card .line { margin: 4px 0; }
+  .card a { color: var(--link); text-decoration: none; }
+  .gallery img { width: 100%; border-radius: var(--radius); display: block; margin-bottom: 10px; }
+
+  .note { background: var(--card); border-radius: 12px; padding: 12px 14px; color: var(--hint); font-size: 14px; }
+  .field { margin-bottom: 18px; }
+  .field[hidden] { display: none; }
+  .label { display: block; font-weight: 600; margin-bottom: 8px; }
+  .label .opt { font-weight: 400; color: var(--hint); font-size: 13px; }
+  .hint { color: var(--hint); font-size: 13px; margin-top: 6px; }
+  input, textarea {
+    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1.5px solid transparent;
+    background: var(--card); color: var(--text); font: inherit; outline: none; appearance: none;
+  }
+  textarea { min-height: 84px; resize: vertical; }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 14px; border-radius: 999px; background: var(--card);
+    border: 1.5px solid transparent; font-size: 15px;
+  }
+  .chip.on { background: var(--accent); color: var(--accent-text); }
+  .err { display: none; color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .bad .err { display: block; }
+  .bad input, .bad textarea, .bad .chip { border-color: var(--danger); }
+  .consent { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; }
+  .consent input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; appearance: auto; accent-color: var(--accent); }
+
+  .bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    box-shadow: 0 -1px 0 rgba(127, 127, 127, .18);
+  }
+  .bottom[hidden] { display: none; }
+  .btn {
+    display: block; width: 100%; max-width: 608px; margin: 0 auto; padding: 15px;
+    border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-text);
+    font-weight: 600;
+  }
+  .toast {
+    position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom));
+    max-width: 608px; margin: 0 auto; background: var(--danger); color: #fff;
+    padding: 12px 14px; border-radius: 12px; text-align: center; font-size: 14px;
+    opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="bottom" id="bottom" hidden><button class="btn" id="bottomBtn"></button></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+// вне Telegram скрипт тоже создаёт WebApp, но с platform = "unknown"
+const tg = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.platform !== "unknown"
+  ? window.Telegram.WebApp : null;
+const D = window.APP_DATA;
+const params = new URLSearchParams(location.search);
+let lang = D.texts[params.get("lang")] ? params.get("lang") : "ru";
+
+if (tg) {
+  document.documentElement.setAttribute("data-tg", "");
+  tg.ready();
+  tg.expand();
+}
+
+const t = (k) => (D.texts[lang] && D.texts[lang][k]) || D.texts.ru[k] || k;
+const app = document.getElementById("app");
+const bottom = document.getElementById("bottom");
+const bottomBtn = document.getElementById("bottomBtn");
+
+// ---------- утилиты ----------
+
+function el(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v === false || v == null) continue;
+    if (k === "class") n.className = v;
+    else if (k === "html") n.innerHTML = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c);
+  return n;
+}
+
+function setBottom(label, onClick) {
+  bottom.hidden = !label;
+  bottomBtn.textContent = label || "";
+  bottomBtn.onclick = onClick || null;
+}
+
+let toastTimer;
+function toast(msg) {
+  const n = document.getElementById("toast");
+  n.textContent = msg;
+  n.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => n.classList.remove("show"), 2600);
+}
+
+function haptic(type) {
+  try { tg && tg.HapticFeedback.notificationOccurred(type); } catch (e) { /* старый клиент */ }
+}
+
+function openLink(url) {
+  if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank");
+}
+
+// ---------- навигация ----------
+
+const stack = [];
+let current = null;
+
+function go(screen) {
+  if (current) stack.push(current);
+  show(screen);
+}
+
+function back() {
+  show(stack.pop() || home);
+}
+
+function show(screen) {
+  current = screen;
+  app.replaceChildren();
+  setBottom(null);
+  screen();
+  window.scrollTo(0, 0);
+  if (tg) stack.length ? tg.BackButton.show() : tg.BackButton.hide();
+}
+
+if (tg) tg.BackButton.onClick(back);
+
+// ---------- состояние ----------
+
+const S = { branch: null, vacancy: null, form: { other_vacancies: [] }, consent: false };
+const branchName = (k) => D.branches.find((b) => b.key === k).name[lang];
+const vacancy = (k) => D.vacancies.find((v) => v.key === k);
+
+// ---------- экраны ----------
+
+function home() {
+  if (D.gallery.length) app.append(el("div", { class: "hero" }, el("img", { src: D.gallery[0], alt: "" })));
+  app.append(
+    el("h1", { text: "Yaponamama 🍣" }),
+    el("p", { class: "sub", text: t("app_tagline") }),
+    el("div", { class: "tiles" },
+      el("button", { class: "tile wide", onclick: () => go(branches) },
+        el("span", { class: "big", text: t("menu_vacancies") }),
+        el("small", { text: `${t("app_open_vacancies")}: ${D.vacancies.length}` })),
+      el("button", { class: "tile", onclick: () => go(about) }, el("span", { class: "big", text: t("menu_about") })),
+      el("button", { class: "tile", onclick: () => go(gallery) }, el("span", { class: "big", text: t("menu_gallery") })),
+      el("button", { class: "tile", onclick: () => go(contacts) }, el("span", { class: "big", text: t("menu_contacts") })),
+      el("button", {
+        class: "tile",
+        onclick: () => { lang = lang === "ru" ? "uz" : "ru"; show(home); },
+      }, el("span", { class: "big", text: t("menu_lang") })),
+    ),
+  );
+}
+
+function branches() {
+  app.append(
+    el("h1", { text: t("choose_branch") }),
+    el("div", { class: "list" }, D.branches.map((b) =>
+      el("button", { class: "row", onclick: () => { S.branch = b.key; go(vacancies); } }, `📍 ${b.name[lang]}`))),
+  );
+}
+
+function vacancies() {
+  app.append(
+    el("h1", { text: `📍 ${branchName(S.branch)}` }),
+    el("p", { class: "sub", text: t("app_open_vacancies") }),
+    el("div", { class: "list" }, D.vacancies.map((v) =>
+      el("button", { class: "row", onclick: () => { S.vacancy = v.key; go(vacancyDetails); } }, v.title[lang]))),
+  );
+}
+
+function vacancyDetails() {
+  app.append(el("div", { class: "rich", html: vacancy(S.vacancy).html[lang] }));
+  setBottom(t("btn_apply"), () => go(form));
+}
+
+function about() {
+  app.append(el("h1", { text: t("menu_about") }), el("div", { class: "rich", html: D.about[lang] }));
+}
+
+function gallery() {
+  app.append(el("h1", { text: t("menu_gallery") }));
+  if (!D.gallery.length) app.append(el("p", { class: "sub", text: t("gallery_empty") }));
+  app.append(el("div", { class: "gallery" }, D.gallery.map((src) => el("img", { src, alt: "", loading: "lazy" }))));
+}
+
+function contacts() {
+  app.append(el("h1", { text: t("menu_contacts") }));
+  for (const c of D.contacts) {
+    app.append(el("div", { class: "card" },
+      el("div", { class: "name", text: `📍 ${c.name[lang]}` }),
+      c.address[lang] && el("div", { class: "line", text: `🏠 ${c.address[lang]}` }),
+      c.hours && el("div", { class: "line", text: `🕒 ${c.hours}` }),
+      c.phone && el("div", { class: "line" }, "📞 ",
+        el("a", { href: `tel:${c.phone.replace(/\s/g, "")}`, text: c.phone })),
+      c.map_url && el("div", { class: "line" }, "🗺 ",
+        el("a", { href: c.map_url, text: t("app_map"),
+                  onclick: (e) => { e.preventDefault(); openLink(c.map_url); } })),
+    ));
+  }
+}
+
+// ---------- анкета ----------
+// Повторяет STEPS из handlers/candidate.py (без фото и голосового — их бот спросит в чате).
+// Окончательная проверка всё равно делается в боте.
+
+const FIELDS = [
+  { section: "app_sec_about" },
+  { f: "gender", kind: "choice", group: "gender" },
+  { f: "lang_ru", kind: "choice", group: "lang_level" },
+  { f: "lang_uz", kind: "choice", group: "lang_level" },
+  { f: "address", kind: "text", min: 5, max: 200, err: "err_address" },
+  { f: "military", kind: "choice", group: "military", when: (d) => d.gender === "male" },
+  { f: "student", kind: "choice", group: "yesno" },
+  { f: "education", kind: "choice", group: "education" },
+  { f: "specialty", kind: "text", min: 2, max: 100, optional: true, err: "err_specialty",
+    when: (d) => d.education === "bachelor" },
+  { f: "experience", kind: "choice", group: "experience" },
+  { f: "last_job", kind: "area", min: 5, max: 300, optional: true, err: "err_last_job",
+    hint: "app_hint_last_job", when: (d) => d.experience && d.experience !== "none" },
+  { f: "other_vacancies", kind: "multi" },
+  { section: "app_sec_personal" },
+  { f: "full_name", kind: "text", min: 2, max: 100, err: "err_name" },
+  { f: "birth_date", kind: "date", err: "err_date" },
+  { f: "phone", kind: "tel", err: "err_phone", placeholder: "+998 90 123 45 67" },
+  { f: "passport", kind: "text", err: "err_passport", placeholder: "AA1234567",
+    normalize: (v) => v.replace(/\s/g, "").toUpperCase(), pattern: /^[A-Z]{2}\d{7}$/ },
+  { f: "pinfl", kind: "num", err: "err_pinfl", placeholder: "12345678901234",
+    normalize: (v) => v.replace(/\s/g, ""), pattern: /^\d{14}$/ },
+];
+
+const fieldNodes = {};
+
+function normPhone(v) {
+  let d = v.replace(/\D/g, "");
+  if (d.length === 9) d = "998" + d;
+  return d.length === 12 && d.startsWith("998") ? "+" + d : null;
+}
+
+function isoToDots(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : null;
+}
+
+function chipGroup(spec) {
+  const box = el("div", { class: "chips" });
+  const items = spec.kind === "multi"
+    ? D.vacancies.filter((v) => v.key !== S.vacancy).map((v) => [v.key, v.title[lang]])
+    : Object.entries(D.options[spec.group]).map(([k, label]) => [k, label[lang]]);
+  for (const [key, label] of items) {
+    const isOn = () => spec.kind === "multi" ? S.form.other_vacancies.includes(key) : S.form[spec.f] === key;
+    const chip = el("button", { class: "chip" + (isOn() ? " on" : ""), type: "button", text: label });
+    chip.onclick = () => {
+      if (spec.kind === "multi") {
+        const list = S.form.other_vacancies;
+        S.form.other_vacancies = list.includes(key) ? list.filter((x) => x !== key) : [...list, key];
+      } else {
+        S.form[spec.f] = key;
+        box.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
+      }
+      chip.classList.toggle("on", isOn());
+      fieldNodes[spec.f].classList.remove("bad");
+      refreshVisibility();
+    };
+    box.append(chip);
+  }
+  return box;
+}
+
+function inputFor(spec) {
+  const common = {
+    oninput: (e) => { S.form[spec.f] = e.target.value; fieldNodes[spec.f].classList.remove("bad"); },
+    placeholder: spec.placeholder || false,
+  };
+  if (spec.kind === "area") return el("textarea", { ...common, maxlength: spec.max }, S.form[spec.f] || "");
+  if (spec.kind === "date") {
+    const today = new Date().toISOString().slice(0, 10);
+    return el("input", { ...common, type: "date", min: "1950-01-01", max: today, value: S.form[spec.f] || "" });
+  }
+  const type = spec.kind === "tel" ? "tel" : "text";
+  const inputmode = spec.kind === "num" ? "numeric" : spec.kind === "tel" ? "tel" : false;
+  const value = S.form[spec.f] || (spec.kind === "tel" ? "+998 " : "");
+  if (spec.kind === "tel") S.form[spec.f] = value;
+  return el("input", { ...common, type, inputmode, value, maxlength: spec.max || false,
+                       autocapitalize: spec.f === "passport" ? "characters" : false });
+}
+
+function form() {
+  app.append(
+    el("h1", { text: vacancy(S.vacancy).title[lang] }),
+    el("p", { class: "sub", text: `📍 ${branchName(S.branch)}` }),
+  );
+  for (const spec of FIELDS) {
+    if (spec.section) { app.append(el("h2", { text: t(spec.section) })); continue; }
+    const isChoice = spec.kind === "choice" || spec.kind === "multi";
+    const node = el("div", { class: "field" },
+      el("span", { class: "label" }, t(`app_q_${spec.f}`),
+        spec.optional || spec.kind === "multi" ? el("span", { class: "opt", text: ` · ${t("app_optional")}` }) : null),
+      isChoice ? chipGroup(spec) : inputFor(spec),
+      spec.hint ? el("div", { class: "hint", text: t(spec.hint) }) : null,
+      el("div", { class: "err" }),
+    );
+    fieldNodes[spec.f] = node;
+    app.append(node);
+  }
+  const consentBox = el("input", { type: "checkbox", checked: S.consent,
+                                    onchange: (e) => { S.consent = e.target.checked; consentField.classList.remove("bad"); } });
+  const consentField = el("div", { class: "field" },
+    el("label", { class: "consent" }, consentBox, el("span", { text: t("app_consent_check") })),
+    el("div", { class: "err", text: t("app_need_consent") }));
+  fieldNodes.consent = consentField;
+  app.append(el("p", { class: "note", text: t("app_media_note") }), el("h2"), consentField);
+  refreshVisibility();
+  setBottom(t("app_submit"), submit);
+}
+
+function refreshVisibility() {
+  for (const spec of FIELDS) {
+    if (spec.when && fieldNodes[spec.f]) fieldNodes[spec.f].hidden = !spec.when(S.form);
+  }
+}
+
+function validate(spec) {
+  const raw = S.form[spec.f];
+  if (spec.kind === "multi") return { ok: true, value: raw || [] };
+  if (spec.kind === "choice") return raw in D.options[spec.group] ? { ok: true, value: raw } : { ok: false, err: "app_err_required" };
+  const text = (raw || "").trim();
+  const empty = !text || (spec.kind === "tel" && text === "+998");
+  if (empty) return spec.optional ? { ok: true, value: null } : { ok: false, err: "app_err_required" };
+  let value = null;
+  if (spec.kind === "date") value = isoToDots(text);
+  else if (spec.kind === "tel") value = normPhone(text);
+  else if (spec.pattern) { const v = spec.normalize(text); value = spec.pattern.test(v) ? v : null; }
+  else { const v = text.replace(/\s+/g, " "); value = v.length >= spec.min && v.length <= spec.max ? v : null; }
+  return value ? { ok: true, value } : { ok: false, err: spec.err };
+}
+
+function submit() {
+  const payload = { v: 1, lang, branch: S.branch, vacancy: S.vacancy, consent: S.consent };
+  let firstBad = null;
+  for (const spec of FIELDS) {
+    if (spec.section) continue;
+    const node = fieldNodes[spec.f];
+    if (spec.when && !spec.when(S.form)) { payload[spec.f] = null; continue; }
+    const r = validate(spec);
+    node.classList.toggle("bad", !r.ok);
+    if (r.ok) payload[spec.f] = r.value;
+    else { node.querySelector(".err").textContent = t(r.err); firstBad = firstBad || node; }
+  }
+  if (!S.consent) { fieldNodes.consent.classList.add("bad"); firstBad = firstBad || fieldNodes.consent; }
+  if (firstBad) {
+    haptic("error");
+    toast(S.consent || firstBad !== fieldNodes.consent ? t("app_fix_errors") : t("app_need_consent"));
+    firstBad.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  if (!tg || !tg.sendData) { toast(t("app_not_in_tg")); return; }
+  try {
+    haptic("success");
+    tg.sendData(JSON.stringify(payload));  // Telegram сам закроет приложение
+  } catch (e) {
+    toast(t("app_not_in_tg"));
+  }
+}
+
+show(home);
+</script>
+</body>
+</html>
