@@ -131,6 +131,20 @@
   .big-num { font-size: 32px; font-weight: 700; }
   .chip:disabled { opacity: .45; }
   .loading { color: var(--hint); text-align: center; padding: 40px 0; }
+  .bar { height: 8px; border-radius: 4px; background: rgba(127, 127, 127, .2); overflow: hidden; margin: 10px 0 4px; }
+  .bar > div { height: 100%; background: var(--accent); }
+  .stage { margin-bottom: 14px; }
+  .stage.future { opacity: .5; }
+  .stage h3 { font-size: 15px; margin: 18px 0 8px; display: flex; gap: 8px; align-items: center; }
+  .stage h3 .now { font-size: 12px; font-weight: 600; color: var(--accent-text); background: var(--accent);
+                   border-radius: 6px; padding: 2px 6px; }
+  .check { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; border: 0;
+           background: var(--card); border-radius: 12px; padding: 12px 14px; margin-bottom: 6px; }
+  .check .mark { flex: none; width: 24px; text-align: center; font-size: 18px; line-height: 1.2; }
+  .check .what { flex: 1; }
+  .check .state { display: block; color: var(--hint); font-size: 12px; margin-top: 3px; }
+  .check .confirm { flex: none; border: 0; border-radius: 8px; padding: 6px 10px; background: var(--accent);
+                    color: var(--accent-text); font-size: 13px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -521,6 +535,10 @@ function staffHome() {
       el("div", { class: "name", text: ME.name }),
       el("div", { class: "meta", text: `${ME.position} · 📍 ${ME.branch_name[lang]}` })),
     el("div", { class: "tiles" },
+      ME.has_adaptation && el("button", { class: "tile wide", onclick: () => go(adaptMine) },
+        el("span", { class: "big", text: t("ad_tile_mine") })),
+      ME.trainees > 0 && el("button", { class: "tile wide", onclick: () => go(adaptTrainees) },
+        el("span", { class: "big", text: t("ad_tile_trainees") }), el("small", { text: String(ME.trainees) })),
       el("button", { class: "tile wide", onclick: () => go(staffSchedule) }, el("span", { class: "big", text: t("sa_schedule") })),
       el("button", { class: "tile", onclick: () => go(staffSwap) }, el("span", { class: "big", text: t("sa_swap") })),
       el("button", { class: "tile", onclick: () => go(staffLeave) },
@@ -655,6 +673,83 @@ function staffLeave() {
       }
     }
   });
+}
+
+// ---------- адаптация ----------
+
+function progressBlock(a) {
+  const pct = Math.round(100 * a.progress.both / Math.max(a.progress.total, 1));
+  return el("div", { class: "who" },
+    el("div", { class: "name", text: a.role === "mentor" ? a.trainee : a.plan_title[lang] }),
+    el("div", { class: "meta", text: `${t("ad_day").replace("{day}", Math.min(a.day, a.total)).replace("{total}", a.total)}`
+      + ` · ${t("ad_mentor")}: ${a.mentor || t("ad_no_mentor")}` }),
+    el("div", { class: "bar" }, el("div", { style: `width:${pct}%` })),
+    el("div", { class: "meta", text: `${t("ad_progress")}: ${a.progress.both}/${a.progress.total}` }),
+    a.lagging ? el("div", { class: "meta", style: "color: var(--danger); margin-top: 4px", text: t("ad_lagging") }) : null);
+}
+
+function adaptMine() {
+  loading(t("ad_tile_mine"), () => api("/api/adaptation"), ({ mine }) => {
+    if (!mine) { app.append(el("p", { class: "sub", text: t("sa_err_generic") })); return; }
+    show(() => adaptDetail(mine.id));
+  });
+}
+
+function adaptTrainees() {
+  loading(t("ad_tile_trainees"), () => api("/api/adaptation"), ({ trainees }) => {
+    if (!trainees.length) app.append(el("p", { class: "sub", text: t("ad_no_trainees") }));
+    for (const a of trainees) {
+      const node = progressBlock(a);
+      node.style.cursor = "pointer";
+      node.onclick = () => go(() => adaptDetail(a.id));
+      app.append(node);
+    }
+  });
+}
+
+function adaptDetail(id) {
+  loading(t("ad_tile_mine"), () => api(`/api/adaptation/${id}`), (a) => renderAdapt(a));
+}
+
+function renderAdapt(a) {
+  const heading = app.querySelector("h1");
+  if (heading) heading.textContent = a.role === "mentor" ? t("ad_tile_trainees") : t("ad_tile_mine");
+  const box = el("div");
+  app.append(box);
+  const draw = (a) => {
+    box.replaceChildren(progressBlock(a), el("p", { class: "note", text: t(a.role === "mentor" ? "ad_hint_mentor" : "ad_hint_trainee") }));
+    const stages = [...a.stages].sort((x, y) => (y.current - x.current));  // текущий этап — первым
+    for (const s of stages) {
+      const node = el("div", { class: "stage" + (s.open ? "" : " future") },
+        el("h3", {}, s.title[lang], s.current ? el("span", { class: "now", text: t("ad_now") }) : null));
+      for (const it of s.items) {
+        const done = it.mentor && it.trainee;
+        const mark = done ? "✅" : it.mentor ? "☑️" : "○";
+        const state = done ? "" : it.mentor ? (a.role === "mentor" ? t("ad_wait_trainee") : "") : t("ad_wait_mentor");
+        const row = el("div", { class: "check" },
+          el("span", { class: "mark", text: mark }),
+          el("span", { class: "what" }, it.text[lang], state ? el("span", { class: "state", text: state }) : null));
+        if (a.role === "trainee" && it.mentor && !it.trainee && s.open) {
+          row.append(el("button", { class: "confirm", text: t("ad_confirm"), onclick: () => send(it.key, true) }));
+        }
+        if (a.role === "mentor" && s.open && !it.trainee) {
+          row.style.cursor = "pointer";
+          row.onclick = () => send(it.key, !it.mentor);
+        }
+        node.append(row);
+      }
+      box.append(node);
+    }
+  };
+  const send = async (item, value) => {
+    try {
+      const updated = await api(`/api/adaptation/${a.id}/check`, { item, value });
+      haptic("success");
+      a = updated;
+      draw(a);
+    } catch (e) { haptic("error"); toast(errText(e)); }
+  };
+  draw(a);
 }
 
 function staffSalary() {
