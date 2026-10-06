@@ -205,6 +205,46 @@ window.APP_DATA = {
     "uz": "Oliy (bakalavr)"
    }
   },
+  "dismiss_reason": {
+   "own": {
+    "ru": "По собственному желанию",
+    "uz": "O‘z xohishim bilan"
+   },
+   "relocation": {
+    "ru": "Переезд",
+    "uz": "Ko‘chib ketish"
+   },
+   "study": {
+    "ru": "Учёба",
+    "uz": "O‘qish"
+   },
+   "other": {
+    "ru": "Другое",
+    "uz": "Boshqa"
+   }
+  },
+  "rating": {
+   "1": {
+    "ru": "⭐",
+    "uz": "⭐"
+   },
+   "2": {
+    "ru": "⭐⭐",
+    "uz": "⭐⭐"
+   },
+   "3": {
+    "ru": "⭐⭐⭐",
+    "uz": "⭐⭐⭐"
+   },
+   "4": {
+    "ru": "⭐⭐⭐⭐",
+    "uz": "⭐⭐⭐⭐"
+   },
+   "5": {
+    "ru": "⭐⭐⭐⭐⭐",
+    "uz": "⭐⭐⭐⭐⭐"
+   }
+  },
   "experience": {
    "lt1": {
     "ru": "До 1 года",
@@ -320,7 +360,64 @@ window.APP_DATA = {
    "app_q_birth_date": "🎂 Дата рождения",
    "app_q_phone": "📞 Телефон",
    "app_q_passport": "🪪 Серия и номер паспорта",
-   "app_q_pinfl": "🔢 ПИНФЛ (14 цифр, указан в паспорте)"
+   "app_q_pinfl": "🔢 ПИНФЛ (14 цифр, указан в паспорте)",
+   "menu_staff": "👤 Я сотрудник",
+   "link_ask": "Чтобы войти как сотрудник, отправьте свой номер телефона кнопкой ниже 👇\nНомер должен совпадать с тем, что записан у HR.",
+   "link_own_contact": "Отправьте, пожалуйста, именно свой номер кнопкой «📱 Отправить номер».",
+   "link_not_found": "Сотрудник с таким номером не найден. Обратитесь к HR, чтобы вас добавили в список.",
+   "link_taken": "Этот номер уже привязан к другому аккаунту Telegram. Обратитесь к HR.",
+   "link_ok": "✅ Готово, {name}! Теперь вам доступно меню сотрудника 👇",
+   "emp_welcome": "Меню сотрудника Yaponamama 👇",
+   "emp_vacation": "🏖 Отпуск",
+   "emp_dayoff": "📅 Отгул",
+   "emp_sick": "🤒 Больничный",
+   "emp_dismissal": "📝 Увольнение",
+   "emp_profile": "👤 Мои данные",
+   "emp_requests": "📋 Мои заявления",
+   "profile": "<b>{name}</b>\n🏢 Филиал: {branch}\n💼 Должность: {position}\n📞 Телефон: {phone}\n📅 Дата приёма: {hire}\n🏖 Остаток отпуска: {left} дн.",
+   "no_requests": "У вас пока нет заявлений.",
+   "my_requests": "<b>Ваши заявления:</b>",
+   "ask_from_vacation": "🏖 С какой даты отпуск? (ДД.ММ.ГГГГ)\nОстаток отпуска: {left} дн.",
+   "ask_to_vacation": "По какую дату включительно? (ДД.ММ.ГГГГ)",
+   "ask_from_dayoff": "📅 На какую дату отгул? (ДД.ММ.ГГГГ)",
+   "ask_to_dayoff": "До какой даты включительно? Если на один день — нажмите «Один день».",
+   "ask_reason_dayoff": "Укажите причину отгула:",
+   "ask_from_sick": "🤒 С какой даты вы на больничном? (ДД.ММ.ГГГГ)",
+   "ask_photo_sick": "Если есть больничный лист — отправьте фото, или нажмите «Пропустить».",
+   "ask_from_dismissal": "📝 Ваш последний рабочий день? (ДД.ММ.ГГГГ)\nОбычно заявление подаётся за 2 недели до увольнения.",
+   "ask_reason_dismissal": "Причина увольнения:",
+   "ask_comment": "Комментарий — или нажмите «Пропустить»:",
+   "btn_one_day": "Один день",
+   "btn_req_send": "✅ Отправить заявление",
+   "err_date_past": "Дата не может быть в прошлом.",
+   "err_date_order": "Дата окончания не может быть раньше даты начала.",
+   "err_too_long": "Слишком длинный период — не больше 60 дней.",
+   "err_reason": "Напишите причину (от 3 до 300 символов).",
+   "vac_over": "⚠️ Запрошено {days} дн., а остаток — {left} дн. Заявление можно отправить, решение примет руководство.",
+   "req_check": "Проверьте заявление:",
+   "req_sent": "📨 Заявление №{id} отправлено. Сообщим, когда будет решение.",
+   "sick_sent": "📨 Больничный зарегистрирован (№{id}). Выздоравливайте! 🙏",
+   "req_approved": "✅ Ваше заявление №{id} ({kind}, {period}) одобрено.",
+   "req_rejected": "❌ Ваше заявление №{id} ({kind}, {period}) отклонено. По вопросам обратитесь к управляющему.",
+   "dismiss_approved": "Ваше заявление на увольнение одобрено. Последний рабочий день: {date}. Бухгалтерия подготовит окончательный расчёт. Спасибо за работу! 🙏",
+   "kind_vacation": "отпуск",
+   "kind_dayoff": "отгул",
+   "kind_sick": "больничный",
+   "kind_dismissal": "увольнение",
+   "st_pending_manager": "⏳ у управляющего",
+   "st_pending_hr": "⏳ у HR",
+   "st_approved": "✅ одобрено",
+   "st_rejected": "❌ отклонено",
+   "st_registered": "📝 зарегистрирован",
+   "lbl_period": "📅 Период",
+   "lbl_days": "дн.",
+   "lbl_reason": "💬 Причина",
+   "lbl_last_day": "📅 Последний рабочий день",
+   "onb_eve": "⏰ Напоминаем: завтра, {date}, ваш первый рабочий день в Yaponamama!\n📍 Филиал {branch}: {address}\nПриходите за 15 минут до начала смены. Ждём вас! 🙌",
+   "fb_ask": "👋 {name}, вы с нами уже неделю! Как вам первые дни? Оцените от 1 до 5:",
+   "fb_comment": "Спасибо! Хотите что-то добавить? Напишите или нажмите «Пропустить».",
+   "fb_thanks": "Спасибо за отзыв! 🙏",
+   "birthday": "🎉 {name}, с днём рождения! Команда Yaponamama желает вам здоровья, счастья и успехов! 🎂"
   },
   "uz": {
    "welcome": "Yaponamama’ga xush kelibsiz! 🍣\nQuyidagi menyudan kerakli bo‘limni tanlang 👇",
@@ -417,7 +514,64 @@ window.APP_DATA = {
    "app_q_birth_date": "🎂 Tug‘ilgan sana",
    "app_q_phone": "📞 Telefon",
    "app_q_passport": "🪪 Pasport seriyasi va raqami",
-   "app_q_pinfl": "🔢 JSHSHIR (14 ta raqam, pasportda ko‘rsatilgan)"
+   "app_q_pinfl": "🔢 JSHSHIR (14 ta raqam, pasportda ko‘rsatilgan)",
+   "menu_staff": "👤 Men xodimman",
+   "link_ask": "Xodim sifatida kirish uchun pastdagi tugma orqali telefon raqamingizni yuboring 👇\nRaqam HR’da yozilgan raqam bilan bir xil bo‘lishi kerak.",
+   "link_own_contact": "Iltimos, aynan o‘z raqamingizni «📱 Raqamni yuborish» tugmasi orqali yuboring.",
+   "link_not_found": "Bu raqamli xodim topilmadi. Ro‘yxatga qo‘shish uchun HR’ga murojaat qiling.",
+   "link_taken": "Bu raqam boshqa Telegram akkauntiga bog‘langan. HR’ga murojaat qiling.",
+   "link_ok": "✅ Tayyor, {name}! Endi sizga xodim menyusi ochiq 👇",
+   "emp_welcome": "Yaponamama xodimi menyusi 👇",
+   "emp_vacation": "🏖 Ta’til",
+   "emp_dayoff": "📅 Javob olish",
+   "emp_sick": "🤒 Kasallik varaqasi",
+   "emp_dismissal": "📝 Ishdan bo‘shash",
+   "emp_profile": "👤 Ma’lumotlarim",
+   "emp_requests": "📋 Arizalarim",
+   "profile": "<b>{name}</b>\n🏢 Filial: {branch}\n💼 Lavozim: {position}\n📞 Telefon: {phone}\n📅 Ishga kirgan sana: {hire}\n🏖 Ta’til qoldig‘i: {left} kun",
+   "no_requests": "Sizda hozircha arizalar yo‘q.",
+   "my_requests": "<b>Arizalaringiz:</b>",
+   "ask_from_vacation": "🏖 Ta’til qaysi sanadan? (KK.OO.YYYY)\nTa’til qoldig‘i: {left} kun.",
+   "ask_to_vacation": "Qaysi sanagacha (shu kun ham kiradi)? (KK.OO.YYYY)",
+   "ask_from_dayoff": "📅 Qaysi sanaga javob olmoqchisiz? (KK.OO.YYYY)",
+   "ask_to_dayoff": "Qaysi sanagacha (shu kun ham kiradi)? Bir kunga bo‘lsa — «Bir kun»ni bosing.",
+   "ask_reason_dayoff": "Javob olish sababini yozing:",
+   "ask_from_sick": "🤒 Qaysi sanadan kasalsiz? (KK.OO.YYYY)",
+   "ask_photo_sick": "Kasallik varaqasi bo‘lsa — rasmini yuboring yoki «O‘tkazib yuborish»ni bosing.",
+   "ask_from_dismissal": "📝 Oxirgi ish kuningiz? (KK.OO.YYYY)\nOdatda ariza ishdan bo‘shashdan 2 hafta oldin topshiriladi.",
+   "ask_reason_dismissal": "Ishdan bo‘shash sababi:",
+   "ask_comment": "Izoh yozing yoki «O‘tkazib yuborish»ni bosing:",
+   "btn_one_day": "Bir kun",
+   "btn_req_send": "✅ Arizani yuborish",
+   "err_date_past": "Sana o‘tgan kunda bo‘lishi mumkin emas.",
+   "err_date_order": "Tugash sanasi boshlanish sanasidan oldin bo‘lishi mumkin emas.",
+   "err_too_long": "Muddat juda uzun — 60 kundan oshmasin.",
+   "err_reason": "Sababni yozing (3 dan 300 gacha belgi).",
+   "vac_over": "⚠️ {days} kun so‘ralgan, qoldiq esa — {left} kun. Arizani yuborish mumkin, qarorni rahbariyat qabul qiladi.",
+   "req_check": "Arizani tekshiring:",
+   "req_sent": "📨 №{id} ariza yuborildi. Qaror chiqqach xabar beramiz.",
+   "sick_sent": "📨 Kasallik varaqasi ro‘yxatga olindi (№{id}). Tezroq tuzalib keting! 🙏",
+   "req_approved": "✅ №{id} arizangiz ({kind}, {period}) tasdiqlandi.",
+   "req_rejected": "❌ №{id} arizangiz ({kind}, {period}) rad etildi. Savollar bo‘yicha boshqaruvchiga murojaat qiling.",
+   "dismiss_approved": "Ishdan bo‘shash arizangiz tasdiqlandi. Oxirgi ish kuni: {date}. Buxgalteriya yakuniy hisob-kitobni tayyorlaydi. Mehnatingiz uchun rahmat! 🙏",
+   "kind_vacation": "ta’til",
+   "kind_dayoff": "javob olish",
+   "kind_sick": "kasallik varaqasi",
+   "kind_dismissal": "ishdan bo‘shash",
+   "st_pending_manager": "⏳ boshqaruvchida",
+   "st_pending_hr": "⏳ HR’da",
+   "st_approved": "✅ tasdiqlandi",
+   "st_rejected": "❌ rad etildi",
+   "st_registered": "📝 ro‘yxatga olindi",
+   "lbl_period": "📅 Muddat",
+   "lbl_days": "kun",
+   "lbl_reason": "💬 Sabab",
+   "lbl_last_day": "📅 Oxirgi ish kuni",
+   "onb_eve": "⏰ Eslatma: ertaga, {date}, Yaponamama’dagi birinchi ish kuningiz!\n📍 {branch} filiali: {address}\nSmena boshlanishidan 15 daqiqa oldin keling. Sizni kutamiz! 🙌",
+   "fb_ask": "👋 {name}, biz bilan bir haftadan beri ishlayapsiz! Birinchi kunlar qanday o‘tdi? 1 dan 5 gacha baholang:",
+   "fb_comment": "Rahmat! Qo‘shimcha fikringiz bormi? Yozing yoki «O‘tkazib yuborish»ni bosing.",
+   "fb_thanks": "Fikringiz uchun rahmat! 🙏",
+   "birthday": "🎉 {name}, tug‘ilgan kuningiz bilan! Yaponamama jamoasi sizga sog‘lik, baxt va omad tilaydi! 🎂"
   }
  },
  "about": {
