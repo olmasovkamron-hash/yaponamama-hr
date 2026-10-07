@@ -481,7 +481,19 @@ function submit() {
 // ======================================================================
 
 const STAFF = params.get("mode") === "staff";
-const API = (params.get("api") || "").replace(/\/$/, "");
+let API = (params.get("api") || "").replace(/\/$/, "");
+
+/** Актуальный адрес сервера: бот публикует его в api.json при каждой смене туннеля.
+ *  Адрес из кнопки (?api=) — запасной: кнопка могла устареть. */
+async function resolveApi() {
+  try {
+    const r = await fetch(`api.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.api) API = j.api.replace(/\/$/, "");
+    }
+  } catch (e) { /* остаёмся на адресе из кнопки */ }
+}
 const TOKEN = params.get("t");
 let ME = null;
 
@@ -807,6 +819,7 @@ function staffWrite() {
 
 async function startStaff() {
   app.replaceChildren(el("div", { class: "loading", text: "…" }));
+  await resolveApi();
   if (!API) { app.replaceChildren(el("p", { class: "note", text: t("sa_auth") })); return; }
   try {
     ME = await api("/api/me");
