@@ -273,17 +273,33 @@ function branches() {
   );
 }
 
+// Открытые вакансии и зарплаты по филиалам — с сервера бота (HR меняет их в /vacancies).
+// Пока сервер недоступен — показываем все вакансии из data.js.
+let LIVE = null;
+async function loadLiveVacancies() {
+  try {
+    await resolveApi();
+    if (!API) return;
+    const r = await fetch(`${API}/api/public/vacancies`);
+    if (r.ok) LIVE = (await r.json()).branches;
+  } catch (e) { /* остаёмся на data.js */ }
+}
+const branchVacancies = (b) => (LIVE && LIVE[b]) || D.vacancies;
+
 function vacancies() {
+  const list = branchVacancies(S.branch);
   app.append(
     el("h1", { text: `📍 ${branchName(S.branch)}` }),
-    el("p", { class: "sub", text: t("app_open_vacancies") }),
-    el("div", { class: "list" }, D.vacancies.map((v) =>
-      el("button", { class: "row", onclick: () => { S.vacancy = v.key; go(vacancyDetails); } }, v.title[lang]))),
+    el("p", { class: "sub", text: list.length ? t("app_open_vacancies")
+                                              : t("no_open_vacancies").replace("{branch}", branchName(S.branch)) }),
+    el("div", { class: "list" }, list.map((v) =>
+      el("button", { class: "row", onclick: () => { S.vacancy = v.key; S.vacancyHtml = v.html; go(vacancyDetails); } },
+        v.title[lang]))),
   );
 }
 
 function vacancyDetails() {
-  app.append(el("div", { class: "rich", html: vacancy(S.vacancy).html[lang] }));
+  app.append(el("div", { class: "rich", html: (S.vacancyHtml || vacancy(S.vacancy).html)[lang] }));
   setBottom(t("btn_apply"), () => go(form));
 }
 
@@ -827,7 +843,7 @@ async function startStaff() {
   }
 }
 
-if (STAFF) startStaff(); else show(home);
+if (STAFF) startStaff(); else { show(home); loadLiveVacancies(); }
 </script>
 </body>
 </html>
