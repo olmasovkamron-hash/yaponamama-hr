@@ -336,10 +336,7 @@ const FIELDS = [
   { f: "full_name", kind: "text", min: 2, max: 100, err: "err_name" },
   { f: "birth_date", kind: "date", err: "err_date" },
   { f: "phone", kind: "tel", err: "err_phone", placeholder: "+998 90 123 45 67" },
-  { f: "passport", kind: "text", err: "err_passport", placeholder: "AA1234567",
-    normalize: (v) => v.replace(/\s/g, "").toUpperCase(), pattern: /^[A-Z]{2}\d{7}$/ },
-  { f: "pinfl", kind: "num", err: "err_pinfl", placeholder: "12345678901234",
-    normalize: (v) => v.replace(/\s/g, ""), pattern: /^\d{14}$/ },
+  // паспорт и ПИНФЛ бот спрашивает только у принятых
 ];
 
 const fieldNodes = {};
