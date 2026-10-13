@@ -793,15 +793,33 @@ function staffNews() {
 }
 
 function staffKnowledge() {
-  loading(t("sa_kb"), () => api("/api/knowledge"), ({ articles }) => {
-    app.append(el("div", { class: "list" }, articles.map((a) =>
-      el("button", { class: "row", onclick: () => go(() => staffArticle(a)) }, `${a.icon} ${a.title[lang]}`))));
+  loading(t("sa_kb"), () => api("/api/knowledge"), ({ articles, sections = {} }) => {
+    // по разделам, в порядке появления
+    const groups = new Map();
+    for (const a of articles) {
+      const key = a.section || "general";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(a);
+    }
+    for (const [key, items] of groups) {
+      if (sections[key]) app.append(el("h2", { text: sections[key][lang] }));
+      app.append(el("div", { class: "list" }, items.map((a) =>
+        el("button", { class: "row", onclick: () => go(() => staffArticle(a)) }, `${a.icon} ${a.title[lang]}`))));
+    }
   });
 }
 
 function staffArticle(a) {
   app.append(el("h1", { text: `${a.icon} ${a.title[lang]}` }), el("div", { class: "rich", text: a.body[lang] }));
   if (a.video) app.append(el("p", {}, el("a", { href: a.video, text: "▶️ Video", onclick: (e) => { e.preventDefault(); openLink(a.video); } })));
+  if (a.pdf) {
+    setBottom(t("sa_kb_pdf"), async () => {
+      try {
+        await api(`/api/knowledge/${encodeURIComponent(a.id)}/send`, {});
+        haptic("success"); toast(t("sa_kb_pdf_sent"), true);
+      } catch (e) { haptic("error"); toast(errText(e)); }
+    });
+  }
 }
 
 function staffWrite() {
