@@ -245,6 +245,24 @@ window.APP_DATA = {
     "uz": "⭐⭐⭐⭐⭐"
    }
   },
+  "cert_purpose": {
+   "anywhere": {
+    "ru": "По месту требования",
+    "uz": "Talab qilingan joyga"
+   },
+   "bank": {
+    "ru": "Для банка",
+    "uz": "Bank uchun"
+   },
+   "visa": {
+    "ru": "Для визы",
+    "uz": "Viza uchun"
+   },
+   "study": {
+    "ru": "Для учёбы",
+    "uz": "O‘qish uchun"
+   }
+  },
   "dayoff_reason": {
    "family": {
     "ru": "Семейные обстоятельства",
@@ -403,6 +421,14 @@ window.APP_DATA = {
    "emp_requests": "📋 Мои заявления",
    "emp_other": "📂 Прочее",
    "emp_documents": "🪪 Документы для оформления",
+   "exit_ask": "😔 Жаль, что вы уходите. Помогите нам стать лучше: оцените работу в Yaponamama от 1 до 5. Ответ увидит только HR.",
+   "exit_comment": "Что нам стоит улучшить? Напишите честно — или нажмите «Пропустить».",
+   "exit_thanks": "Спасибо за честный ответ и за вашу работу! Удачи 🙏",
+   "emp_certificate": "📄 Справка с места работы",
+   "ask_reason_certificate": "📄 <b>Справка с места работы</b> — подтверждает, что вы работаете в Yaponamama (должность и дата приёма). HR проверит, и бот пришлёт готовый PDF.\n\nДля чего нужна справка? Нажмите кнопку или напишите:",
+   "certificate_ready": "📄 Ваша справка готова — файл ниже. Если нужна печать и подпись — подойдите к HR.",
+   "kind_certificate": "справка",
+   "lbl_purpose": "🎯 Для чего",
    "docs_intro": "📄 <b>Последний шаг — документы для оформления.</b> Их увидит только бухгалтерия.\n\nВведите серию и номер паспорта (например, AA1234567):",
    "docs_done": "✅ Спасибо! Документы переданы в бухгалтерию.",
    "docs_later": "Хорошо, документы можно отправить позже: «📂 Прочее» → «🪪 Документы для оформления».",
@@ -483,6 +509,8 @@ window.APP_DATA = {
    "sa_salary": "💵 Зарплата и выплаты",
    "sa_news": "📢 Объявления",
    "sa_kb": "📚 База знаний и обучение",
+   "sa_kb_pdf": "📎 Прислать PDF с фото в чат",
+   "sa_kb_pdf_sent": "PDF отправлен в чат с ботом",
    "sa_write": "💬 Написать руководству",
    "sa_soon": "Скоро",
    "sa_salary_soon": "Раздел появится позже: расчётные листки, авансы и выплаты.",
@@ -668,6 +696,14 @@ window.APP_DATA = {
    "emp_requests": "📋 Arizalarim",
    "emp_other": "📂 Boshqa",
    "emp_documents": "🪪 Rasmiylashtirish hujjatlari",
+   "exit_ask": "😔 Ketayotganingizdan afsusdamiz. Yaxshilanishimizga yordam bering: Yaponamama’dagi ishni 1 dan 5 gacha baholang. Javobni faqat HR ko‘radi.",
+   "exit_comment": "Nimani yaxshilashimiz kerak? Rostini yozing — yoki «O‘tkazib yuborish»ni bosing.",
+   "exit_thanks": "Samimiy javobingiz va mehnatingiz uchun rahmat! Omad 🙏",
+   "emp_certificate": "📄 Ish joyidan ma’lumotnoma",
+   "ask_reason_certificate": "📄 <b>Ish joyidan ma’lumotnoma</b> — Yaponamama’da ishlashingizni tasdiqlaydi (lavozim va ishga kirgan sana). HR tekshiradi va bot tayyor PDF yuboradi.\n\nMa’lumotnoma nima uchun kerak? Tugmani bosing yoki yozing:",
+   "certificate_ready": "📄 Ma’lumotnomangiz tayyor — fayl pastda. Muhr va imzo kerak bo‘lsa — HR’ga murojaat qiling.",
+   "kind_certificate": "ma’lumotnoma",
+   "lbl_purpose": "🎯 Nima uchun",
    "docs_intro": "📄 <b>Oxirgi qadam — rasmiylashtirish uchun hujjatlar.</b> Ularni faqat buxgalteriya ko‘radi.\n\nPasport seriyasi va raqamini kiriting (masalan, AA1234567):",
    "docs_done": "✅ Rahmat! Hujjatlar buxgalteriyaga topshirildi.",
    "docs_later": "Mayli, hujjatlarni keyinroq yuborish mumkin: «📂 Boshqa» → «🪪 Rasmiylashtirish hujjatlari».",
@@ -748,6 +784,8 @@ window.APP_DATA = {
    "sa_salary": "💵 Maosh va to‘lovlar",
    "sa_news": "📢 E’lonlar",
    "sa_kb": "📚 Bilimlar bazasi va o‘qitish",
+   "sa_kb_pdf": "📎 Rasmli PDF ni chatga yuborish",
+   "sa_kb_pdf_sent": "PDF bot chatiga yuborildi",
    "sa_write": "💬 Rahbariyatga yozish",
    "sa_soon": "Tez orada",
    "sa_salary_soon": "Bo‘lim keyinroq qo‘shiladi: hisob varaqalari, avanslar va to‘lovlar.",
