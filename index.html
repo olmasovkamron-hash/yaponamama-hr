@@ -115,7 +115,8 @@
   .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bg);
           border-top: 1px solid var(--line); padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); }
   .tabs[hidden] { display: none; }
-  .tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 620px; margin: 0 auto; }
+  .tabs .in { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; max-width: 620px; margin: 0 auto; }
+  .tabs .in:has(> :nth-child(5)) button { font-size: 12px; padding: 8px 2px; }
   .tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; border: 0; background: none;
                  padding: 8px 4px; border-radius: 16px; color: var(--hint); font-size: 13px; }
   .tabs button.on { background: var(--accent); color: var(--accent-text); }
@@ -237,6 +238,60 @@
   .btn { border-radius: 999px; }
   .bar > div { background: var(--brand); }
   .bottom { background: var(--bg); box-shadow: 0 -1px 0 var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* обучение: карточка прогресса */
+  svg.i.s { width: 16px; height: 16px; stroke-width: 2.2; }
+  .pcard { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;
+           margin-bottom: 14px; cursor: pointer; }
+  .pcard.slim { cursor: default; padding: 14px 16px; }
+  .pcard .ph { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .pcard .pk { color: var(--hint); font-size: 14px; }
+  .pcard .pv { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .pcard .pp { font-size: 15px; font-weight: 600; color: var(--brand); }
+  .pcard .bar { height: 8px; margin: 12px 0 10px; background: var(--soft); }
+  .pcard .pm { display: flex; flex-direction: column; gap: 3px; color: var(--hint); font-size: 14px; }
+
+  /* пункт плана */
+  .ti { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; }
+  .ti + .ti, .ti + .mi { border-top: 1px solid var(--sep); }
+  .ti .dot { flex: none; width: 26px; height: 26px; margin-top: 1px; border-radius: 50%; border: 1.8px solid var(--line);
+             display: grid; place-items: center; }
+  .ti.half .dot { border-color: var(--text); }
+  .ti.done .dot { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .ti .tb { flex: 1; min-width: 0; }
+  .ti .tt { font-size: 16px; line-height: 1.35; }
+  .ti.done .tt { color: var(--hint); }
+  .ti .ts { color: var(--hint); font-size: 13px; margin-top: 3px; }
+  .ti.half .ts { color: var(--brand); }
+  .ti .confirm { display: block; margin-top: 10px; border: 0; border-radius: 999px; padding: 9px 18px;
+                 background: var(--accent); color: var(--accent-text); font-size: 14px; font-weight: 600; }
+  .ti .confirm.ghost { background: var(--soft); color: var(--text); }
+  .achips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .achip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--bg);
+           border-radius: 999px; padding: 6px 12px; font-size: 14px; font-weight: 500; text-align: left; }
+  .achip.read { background: var(--soft); color: var(--hint); }
+  .menu.future { opacity: .55; }
+
+  /* статья по частям */
+  details.part { background: var(--bg); border: 1px solid var(--line); border-radius: 18px; margin-bottom: 10px; }
+  details.part summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+                         padding: 15px 16px; font-weight: 600; font-size: 17px; cursor: pointer; }
+  details.part summary::-webkit-details-marker { display: none; }
+  details.part summary .chev { transition: transform .2s; color: var(--hint); }
+  details.part[open] summary .chev { transform: rotate(90deg); }
+  .pc { padding: 0 16px 14px; }
+  .rich.parts { padding: 14px 16px; margin-bottom: 10px; white-space: normal; }
+  .rich.parts .pc { padding: 0; }
+  .al { margin: 6px 0; line-height: 1.5; font-size: 16px; }
+  .al.li { padding-left: 16px; position: relative; }
+  .al.li::before { content: ""; position: absolute; left: 3px; top: .68em; width: 5px; height: 5px; border-radius: 50%;
+                   background: var(--text); }
+  .al.no { background: var(--brand-soft); color: var(--brand); border-radius: 12px; padding: 8px 12px; }
+  .al.no.li::before { display: none; }
+  .say { background: var(--soft); border-radius: 8px; padding: 1px 5px; font-style: italic;
+         -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  input[type="search"] { -webkit-appearance: none; padding-left: 44px;
+    background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7a80' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px center / 20px; }
+
   /* когда видна панель вкладок — место под неё */
   body.has-tabs #app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 </style>
@@ -371,6 +426,8 @@ const ICONS = {
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
   chev: '<path d="m9 6 6 6-6 6"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m21 16-5-5-9 9"/>',
@@ -790,14 +847,71 @@ function staffHome() {
     .catch(() => { if (current === screen) drawToday(null); });
 }
 
+/** Пункт плана: кружок-статус, текст, кто что отметил, кнопка «Подтвердить», статьи для чтения. */
+function planItem(it, a, stageOpen, onChange) {
+  const done = it.mentor && it.trainee;
+  const state = done ? L("Пройдено", "O‘tildi")
+    : it.mentor ? (a.role === "mentor" ? t("ad_wait_trainee") : L("Наставник отметил — подтвердите", "Murabbiy belgiladi — tasdiqlang"))
+    : t("ad_wait_mentor");
+  const tb = el("div", { class: "tb" },
+    el("div", { class: "tt", text: it.text[lang] }),
+    el("div", { class: "ts", text: plain(state) }),
+    articleChips(it.articles));
+  const row = el("div", { class: "ti" + (done ? " done" : it.mentor ? " half" : "") },
+    el("span", { class: "dot" }, done || it.mentor ? icon("check", "i s") : null), tb);
+  const send = async (value) => {
+    try {
+      await api(`/api/adaptation/${a.id}/check`, { item: it.key, value });
+      haptic("success");
+      onChange();
+    } catch (e) { haptic("error"); toast(errText(e)); }
+  };
+  // кнопки — под текстом пункта, а не сбоку: не сжимают текст в узкую колонку
+  if (a.role === "trainee" && it.mentor && !it.trainee && stageOpen) {
+    tb.append(el("button", { class: "confirm", text: t("ad_confirm"), onclick: () => send(true) }));
+  }
+  if (a.role === "mentor" && stageOpen && !it.trainee) {
+    tb.append(el("button", { class: "confirm" + (it.mentor ? " ghost" : ""), text: it.mentor ? L("Снять", "Olish") : L("Отметить", "Belgilash"),
+                              onclick: () => send(!it.mentor) }));
+  }
+  return row;
+}
+
+/** «Учить сегодня» — текущий этап плана. */
+function todayCard(a, onChange) {
+  const stage = a.stages.find((s) => s.current);
+  const head = { ic: "calendar", title: L("Учить сегодня", "Bugun o‘rganish") };
+  if (!stage) {
+    const msg = a.day > a.total ? L("План адаптации пройден 🎉", "Adaptatsiya rejasi tugadi 🎉")
+                                : L("Адаптация ещё не началась", "Adaptatsiya hali boshlanmagan");
+    return menu(head, el("p", { class: "sub", style: "margin:4px 0 14px", text: msg }));
+  }
+  return menu(head, el("div", { class: "st", style: "margin:-2px 0 6px;color:var(--hint);font-size:14px", text: stage.title[lang] }),
+    stage.items.map((it) => planItem(it, a, stage.open, onChange)),
+    el("button", { class: "mi", onclick: () => go(() => adaptDetail(a.id)) },
+      el("span", { class: "ic" }, icon("cap")), el("span", { class: "tx" }, el("span", { class: "tt", text: L("Весь план на 35 дней", "35 kunlik to‘liq reja") })),
+      icon("chev", "i chev")));
+}
+
 function staffLearn() {
-  app.append(el("h1", { text: L("Обучение", "O‘qish") }),
-    menu(null,
-      ME.has_adaptation && mi({ ic: "cap", title: t("ad_tile_mine"), onclick: () => go(adaptMine) }),
-      ME.trainees > 0 && mi({ ic: "users", title: t("ad_tile_trainees"), tag: String(ME.trainees), tagGray: true,
-                              onclick: () => go(adaptTrainees) }),
-      mi({ ic: "book", title: t("sa_kb"), sub: L("Стандарты сервиса, внешний вид, правила", "Servis standartlari, qoidalar"),
-           onclick: () => go(staffKnowledge) })));
+  const load = async () => {
+    const kb = await getKB();
+    const ov = ME.has_adaptation || ME.trainees > 0 ? await api("/api/adaptation") : { mine: null, trainees: [] };
+    const mine = ov.mine ? await api(`/api/adaptation/${ov.mine.id}`) : null;
+    return { kb, ov, mine };
+  };
+  loading(L("Обучение", "O‘qish"), load, ({ kb, ov, mine }) => {
+    const reload = () => { KBDATA = null; show(staffLearn); };
+    if (mine) {
+      const p = progressBlock(mine);
+      p.onclick = () => { stack.length = 0; show(staffAdapt); };   // → вкладка «Адаптация»
+      app.append(p, todayCard(mine, reload));
+    }
+    if (mine) app.append(el("h2", { text: L("База знаний", "Bilimlar bazasi") }));
+    const box = el("div");
+    app.append(box);
+    kbBlock(box, kb);
+  });
 }
 
 function staffMore() {
@@ -812,12 +926,41 @@ function staffMore() {
       mi({ ic: "mail", title: t("sa_write"), onclick: () => go(staffWrite) })));
 }
 
-const STAFF_TABS = [
+/** Стажёры наставника: день, процент, сколько стандартов прочитано. */
+function traineesCard(trainees) {
+  return menu({ ic: "users", title: t("ad_tile_trainees") }, trainees.map((a) => {
+    const pct = Math.round(100 * a.progress.both / Math.max(a.progress.total, 1));
+    const st = a.study || { articles: [], read: [] };
+    return mi({ ic: "user", title: a.trainee, onclick: () => go(() => adaptDetail(a.id)),
+                sub: L(`День ${Math.min(a.day, a.total)} · ${pct}% · стандарты ${st.read.length}/${st.articles.length}`,
+                       `${Math.min(a.day, a.total)}-kun · ${pct}% · standartlar ${st.read.length}/${st.articles.length}`),
+                tag: a.lagging ? L("отстаёт", "orqada") : null });
+  }));
+}
+
+/** Вкладка «Адаптация»: весь план стажёра; у наставника сверху — его стажёры. */
+function staffAdapt() {
+  const load = async () => {
+    try { await getKB(); } catch (e) { /* без статей план всё равно покажем */ }
+    const ov = await api("/api/adaptation");
+    const mine = ov.mine ? await api(`/api/adaptation/${ov.mine.id}`) : null;
+    return { ov, mine };
+  };
+  loading(L("Адаптация", "Adaptatsiya"), load, ({ ov, mine }) => {
+    if (ov.trainees.length) app.append(traineesCard(ov.trainees));
+    if (mine) { renderAdapt(mine); app.querySelector("h1").textContent = L("Адаптация", "Adaptatsiya"); }
+    if (!mine && !ov.trainees.length) app.append(el("p", { class: "sub", text: t("ad_no_trainees") }));
+  });
+}
+
+// вкладка «Адаптация» — только у стажёров и наставников
+const STAFF_TABS = () => [
   { icon: "home", label: () => L("Обзор", "Asosiy"), screen: staffHome },
   { icon: "calendar", label: () => L("График", "Jadval"), screen: staffSchedule },
+  (ME.has_adaptation || ME.trainees > 0) && { icon: "cap", label: () => L("Адаптация", "Adaptatsiya"), screen: staffAdapt },
   { icon: "book", label: () => L("Обучение", "O‘qish"), screen: staffLearn },
   { icon: "more", label: () => L("Ещё", "Yana"), screen: staffMore },
-];
+].filter(Boolean);
 
 function staffSchedule() {
   loading(t("sa_schedule"), () => api("/api/schedule"), ({ shifts }) => {
@@ -943,15 +1086,88 @@ function staffLeave() {
 
 // ---------- адаптация ----------
 
+/** Ближайшая аттестация: [номер, день] или null. */
+function nextAttest(a) {
+  if (!a.attest1 && a.day <= 21) return [1, 21];
+  if (!a.attest2 && a.day <= 35) return [2, 35];
+  return null;
+}
+
 function progressBlock(a) {
   const pct = Math.round(100 * a.progress.both / Math.max(a.progress.total, 1));
-  return el("div", { class: "who" },
-    el("div", { class: "name", text: a.role === "mentor" ? a.trainee : a.plan_title[lang] }),
-    el("div", { class: "meta", text: `${t("ad_day").replace("{day}", Math.min(a.day, a.total)).replace("{total}", a.total)}`
-      + ` · ${t("ad_mentor")}: ${a.mentor || t("ad_no_mentor")}` }),
+  const day = Math.min(Math.max(a.day, 1), a.total);
+  const at = nextAttest(a);
+  const st = a.study || { articles: [], read: [] };
+  return el("div", { class: "pcard" },
+    el("div", { class: "ph" },
+      el("div", {},
+        el("div", { class: "pk", text: a.role === "mentor" ? a.trainee : `${L("Адаптация", "Adaptatsiya")} · ${a.plan_title[lang]}` }),
+        el("div", { class: "pv", text: L(`День ${day} из ${a.total}`, `${day}-kun / ${a.total}`) })),
+      el("div", { class: "pp", text: `${pct}%` })),
     el("div", { class: "bar" }, el("div", { style: `width:${pct}%` })),
-    el("div", { class: "meta", text: `${t("ad_progress")}: ${a.progress.both}/${a.progress.total}` }),
-    a.lagging ? el("div", { class: "meta", style: "color: var(--danger); margin-top: 4px", text: t("ad_lagging") }) : null);
+    el("div", { class: "pm" },
+      el("span", { text: `${t("ad_mentor")}: ${a.mentor || t("ad_no_mentor")}` }),
+      st.articles.length ? el("span", { text: L(`Стандарты: ${st.read.length} из ${st.articles.length}`,
+                                                 `Standartlar: ${st.read.length}/${st.articles.length}`) }) : null,
+      at ? el("span", { text: L(`Аттестация №${at[0]}: день ${at[1]} (через ${Math.max(at[1] - a.day, 0)} дн.)`,
+                                `${at[0]}-attestatsiya: ${at[1]}-kun (${Math.max(at[1] - a.day, 0)} kundan keyin)`) }) : null),
+    a.lagging ? el("div", { class: "tag", style: "display:inline-block;margin-top:10px", text: plain(t("ad_lagging")) }) : null);
+}
+
+// ---------- база знаний: данные, статьи по частям ----------
+
+let KBDATA = null;   // { articles, sections } — один раз за сессию, отметки «Изучено» обновляем на месте
+async function getKB() {
+  if (!KBDATA) KBDATA = await api("/api/knowledge");
+  return KBDATA;
+}
+const kbArticle = (id) => KBDATA && KBDATA.articles.find((a) => a.id === id);
+const realArticle = (a) => !String(a.id).startsWith("plan_");   // планы адаптации — справочные, без «Изучено»
+
+/** Текст статьи → части: строка ЗАГЛАВНЫМИ — заголовок части. */
+function articleParts(body) {
+  const parts = [{ title: null, lines: [] }];
+  for (const raw of String(body || "").split("\n")) {
+    const line = raw.trim();
+    if (line.length > 3 && /[A-ZА-ЯЁʻ‘]{3}/.test(line) && !/[a-zа-яё]/.test(line)) parts.push({ title: line, lines: [] });
+    else parts[parts.length - 1].lines.push(line);
+  }
+  return parts.filter((p) => p.title || p.lines.some(Boolean));
+}
+const capitalize = (s) => s.charAt(0) + s.slice(1).toLowerCase();
+
+/** Одна строка: «• пункт», «❌ так не говорим», фразы в «кавычках» — подсвечены как готовые скрипты. */
+function articleLine(line) {
+  if (!line) return null;
+  let cls = "al", text = line;
+  if (/^[•\-–]\s*/.test(text)) { cls += " li"; text = text.replace(/^[•\-–]\s*/, ""); }
+  if (/^❌/.test(text)) { cls += " no"; text = text.replace(/^❌\s*/, ""); }
+  const n = el("div", { class: cls });
+  for (const [i, chunk] of text.split(/(«[^»]+»)/).entries()) {
+    if (!chunk) continue;
+    n.append(i % 2 ? el("span", { class: "say", text: chunk }) : chunk);
+  }
+  return n;
+}
+
+function readMinutes(body) {
+  return Math.max(1, Math.round(String(body || "").split(/\s+/).length / 160));
+}
+
+/** Строка статьи в списке: значок, название, «N мин», отметка «изучено». */
+function articleRow(a, sub) {
+  return mi({ ic: a.read ? "check" : "book", title: a.title[lang],
+              sub: sub || L(`${readMinutes(a.body[lang])} мин чтения`, `${readMinutes(a.body[lang])} daqiqa`),
+              onclick: () => go(() => staffArticle(a.id)) });
+}
+
+/** Кнопки-статьи под пунктом плана. */
+function articleChips(ids) {
+  const list = (ids || []).map(kbArticle).filter(Boolean);
+  if (!list.length) return null;
+  return el("div", { class: "achips" }, list.map((a) =>
+    el("button", { class: "achip" + (a.read ? " read" : ""), onclick: (e) => { e.stopPropagation(); go(() => staffArticle(a.id)); } },
+      icon(a.read ? "check" : "book", "i s"), el("span", { text: a.title[lang] }))));
 }
 
 function adaptMine() {
@@ -974,46 +1190,31 @@ function adaptTrainees() {
 }
 
 function adaptDetail(id) {
-  loading(t("ad_tile_mine"), () => api(`/api/adaptation/${id}`), (a) => renderAdapt(a));
+  const load = async () => { try { await getKB(); } catch (e) { /* без статей план всё равно покажем */ }
+                             return api(`/api/adaptation/${id}`); };
+  loading(t("ad_tile_mine"), load, (a) => renderAdapt(a));
 }
 
 function renderAdapt(a) {
   const heading = app.querySelector("h1");
-  if (heading) heading.textContent = a.role === "mentor" ? t("ad_tile_trainees") : t("ad_tile_mine");
+  if (heading) heading.textContent = plain(a.role === "mentor" ? a.trainee : t("ad_tile_mine"));
   const box = el("div");
   app.append(box);
-  const draw = (a) => {
-    box.replaceChildren(progressBlock(a), el("p", { class: "note", text: t(a.role === "mentor" ? "ad_hint_mentor" : "ad_hint_trainee") }));
-    const stages = [...a.stages].sort((x, y) => (y.current - x.current));  // текущий этап — первым
-    for (const s of stages) {
-      const node = el("div", { class: "stage" + (s.open ? "" : " future") },
-        el("h3", {}, s.title[lang], s.current ? el("span", { class: "now", text: t("ad_now") }) : null));
-      for (const it of s.items) {
-        const done = it.mentor && it.trainee;
-        const mark = done ? "✅" : it.mentor ? "☑️" : "○";
-        const state = done ? "" : it.mentor ? (a.role === "mentor" ? t("ad_wait_trainee") : "") : t("ad_wait_mentor");
-        const row = el("div", { class: "check" },
-          el("span", { class: "mark", text: mark }),
-          el("span", { class: "what" }, it.text[lang], state ? el("span", { class: "state", text: state }) : null));
-        if (a.role === "trainee" && it.mentor && !it.trainee && s.open) {
-          row.append(el("button", { class: "confirm", text: t("ad_confirm"), onclick: () => send(it.key, true) }));
-        }
-        if (a.role === "mentor" && s.open && !it.trainee) {
-          row.style.cursor = "pointer";
-          row.onclick = () => send(it.key, !it.mentor);
-        }
-        node.append(row);
-      }
-      box.append(node);
-    }
+  const refresh = async () => {
+    try { a = await api(`/api/adaptation/${a.id}`); draw(a); } catch (e) { toast(errText(e)); }
   };
-  const send = async (item, value) => {
-    try {
-      const updated = await api(`/api/adaptation/${a.id}/check`, { item, value });
-      haptic("success");
-      a = updated;
-      draw(a);
-    } catch (e) { haptic("error"); toast(errText(e)); }
+  const draw = (a) => {
+    box.replaceChildren(progressBlock(a), el("p", { class: "note", style: "margin-bottom:14px",
+                                                    text: plain(t(a.role === "mentor" ? "ad_hint_mentor" : "ad_hint_trainee")) }));
+    // текущий этап — первым, затем по порядку; будущие — бледнее
+    const stages = [...a.stages].sort((x, y) => (y.current - x.current) || (x.start - y.start));
+    for (const s of stages) {
+      const doneN = s.items.filter((it) => it.mentor && it.trainee).length;
+      const head = el("div", { class: "mh" }, icon(s.current ? "calendar" : doneN === s.items.length ? "check" : "clock"),
+        el("span", { style: "flex:1", text: s.title[lang] }),
+        s.current ? el("span", { class: "tag", text: plain(t("ad_now")) }) : el("span", { class: "tag gray", text: `${doneN}/${s.items.length}` }));
+      box.append(el("div", { class: "menu" + (s.open ? "" : " future") }, head, s.items.map((it) => planItem(it, a, s.open, refresh))));
+    }
   };
   draw(a);
 }
@@ -1033,33 +1234,88 @@ function staffNews() {
   });
 }
 
-function staffKnowledge() {
-  loading(t("sa_kb"), () => api("/api/knowledge"), ({ articles, sections = {} }) => {
-    // по разделам, в порядке появления
-    const groups = new Map();
-    for (const a of articles) {
-      const key = a.section || "general";
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(a);
-    }
-    for (const [key, items] of groups) {
-      if (sections[key]) app.append(el("h2", { text: sections[key][lang] }));
-      app.append(el("div", { class: "list" }, items.map((a) =>
-        el("button", { class: "row", onclick: () => go(() => staffArticle(a)) }, `${a.icon} ${a.title[lang]}`))));
-    }
-  });
+/** Поиск + все стандарты по разделам с отметками «Изучено». */
+function kbBlock(box, { articles, sections = {} }) {
+  const real = articles.filter(realArticle);
+  const done = real.filter((a) => a.read).length;
+  const results = el("div");
+  const list = el("div");
+  const q = el("input", { type: "search", placeholder: L("Поиск: поднос, бронь, десерт…", "Qidiruv: patnis, bron…"),
+                          enterkeyhint: "search", autocomplete: "off" });
+  const draw = () => {
+    const s = q.value.trim().toLowerCase();
+    results.replaceChildren();
+    list.hidden = !!s;
+    if (!s) return;
+    const found = articles.filter((a) => (a.title[lang] + "\n" + a.body[lang]).toLowerCase().includes(s));
+    if (!found.length) { results.append(el("p", { class: "sub", text: L("Ничего не нашлось", "Hech narsa topilmadi") })); return; }
+    results.append(menu(null, found.map((a) => {
+      const body = a.body[lang], i = body.toLowerCase().indexOf(s);
+      const snippet = i < 0 ? "" : (i > 30 ? "…" : "") + body.slice(Math.max(0, i - 30), i + s.length + 50).replace(/\s+/g, " ") + "…";
+      return articleRow(a, snippet || undefined);
+    })));
+  };
+  q.addEventListener("input", draw);
+  const groups = new Map();
+  for (const a of articles) {
+    const key = a.section || "general";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(a);
+  }
+  list.append(el("div", { class: "pcard slim" },
+    el("div", { class: "ph" }, el("div", {},
+      el("div", { class: "pk", text: L("Изучено стандартов", "O‘rganilgan standartlar") }),
+      el("div", { class: "pv", text: L(`${done} из ${real.length}`, `${done} / ${real.length}`) }))),
+    el("div", { class: "bar" }, el("div", { style: `width:${Math.round(100 * done / Math.max(real.length, 1))}%` }))));
+  for (const [key, items] of groups) {
+    list.append(menu({ ic: key === "look" ? "user" : key === "adaptation" ? "cap" : key === "general" ? "info" : "book",
+                       title: sections[key] ? sections[key][lang] : key }, items.map((a) => articleRow(a))));
+  }
+  box.append(el("div", { class: "field" }, q), results, list);
 }
 
-function staffArticle(a) {
-  app.append(el("h1", { text: `${a.icon} ${a.title[lang]}` }), el("div", { class: "rich", text: a.body[lang] }));
-  if (a.video) app.append(el("p", {}, el("a", { href: a.video, text: "▶️ Video", onclick: (e) => { e.preventDefault(); openLink(a.video); } })));
-  if (a.pdf) {
-    setBottom(t("sa_kb_pdf"), async () => {
-      try {
-        await api(`/api/knowledge/${encodeURIComponent(a.id)}/send`, {});
-        haptic("success"); toast(t("sa_kb_pdf_sent"), true);
-      } catch (e) { haptic("error"); toast(errText(e)); }
-    });
+function staffKnowledge() {
+  loading(t("sa_kb"), getKB, (data) => { const box = el("div"); app.append(box); kbBlock(box, data); });
+}
+
+function staffArticle(id) {
+  const a = kbArticle(id);
+  if (!a) { back(); return; }
+  const parts = articleParts(a.body[lang]);
+  app.append(el("h1", { text: a.title[lang] }),
+    el("p", { class: "sub" }, L(`${readMinutes(a.body[lang])} мин чтения`, `${readMinutes(a.body[lang])} daqiqa`),
+      a.read ? el("span", { class: "tag gray", style: "margin-left:8px", text: L("✓ изучено", "✓ o‘rganildi") }) : null));
+  // части статьи — сворачиваемые карточки; первая открыта
+  parts.forEach((p, i) => {
+    const content = el("div", { class: "pc" }, p.lines.map(articleLine));
+    if (!p.title) { app.append(el("div", { class: "rich parts" }, content)); return; }
+    app.append(el("details", { class: "part", open: i <= 1 },
+      el("summary", {}, el("span", { text: capitalize(p.title) }), icon("chev", "i chev")), content));
+  });
+  const extra = [];
+  if (a.pdf) extra.push(mi({ ic: "image", title: t("sa_kb_pdf"), onclick: async () => {
+    try {
+      await api(`/api/knowledge/${encodeURIComponent(a.id)}/send`, {});
+      haptic("success"); toast(t("sa_kb_pdf_sent"), true);
+    } catch (e) { haptic("error"); toast(errText(e)); }
+  } }));
+  // следующая статья того же раздела — читать подряд без возврата в список
+  const same = KBDATA.articles.filter((x) => x.section === a.section);
+  const next = same[same.indexOf(a) + 1];
+  if (next) extra.push(mi({ ic: "chev", title: next.title[lang], sub: L("Следующая статья", "Keyingi maqola"),
+                            onclick: () => { show(() => staffArticle(next.id)); } }));
+  if (extra.length) app.append(el("div", { style: "height:6px" }), menu(null, extra));
+  if (realArticle(a)) {
+    setBottom(a.read ? L("✓ Изучено — снять отметку", "✓ O‘rganildi — belgini olish") : L("Я изучил(а) — отметить", "O‘rgandim — belgilash"),
+      async () => {
+        try {
+          await api(`/api/knowledge/${encodeURIComponent(a.id)}/read`, { value: !a.read });
+          a.read = !a.read;
+          haptic("success");
+          toast(a.read ? L("Отмечено как изученное ✓", "O‘rganildi deb belgilandi ✓") : L("Отметка снята", "Belgi olindi"), true);
+          show(() => staffArticle(a.id));   // перерисовать с новой отметкой (стек не меняется)
+        } catch (e) { haptic("error"); toast(errText(e)); }
+      });
   }
 }
 
@@ -1096,7 +1352,7 @@ async function startStaff() {
   try {
     ME = await api("/api/me");
     if (D.texts[ME.lang]) lang = ME.lang;
-    TABS = STAFF_TABS;
+    TABS = STAFF_TABS();
     show(staffHome);
   } catch (e) {
     app.replaceChildren(el("p", { class: "note", text: errText(e) }));
