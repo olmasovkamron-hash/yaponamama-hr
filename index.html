@@ -8,58 +8,126 @@
 <title>Yaponamama — работа</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="data.js"></script>
+<!-- Inter — ближайший к Apple SF Pro бесплатный шрифт: на Android и компьютерах вид как на iPhone
+     (на iPhone/Mac используется сам SF Pro — он первый в списке) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Чистый монохромный стиль: светло-серый фон, белые карточки с тонкой рамкой, контурные значки,
+     чёрные «таблетки» для главных кнопок, красный — только для важного (просрочено, бренд) */
   :root {
-    --bg: var(--tg-theme-bg-color, #ffffff);
-    --text: var(--tg-theme-text-color, #111111);
-    --hint: var(--tg-theme-hint-color, #8a8a8e);
-    --card: var(--tg-theme-secondary-bg-color, #f2f2f7);
-    --accent: var(--tg-theme-button-color, #e2231a);
-    --accent-text: var(--tg-theme-button-text-color, #ffffff);
-    --link: var(--tg-theme-link-color, #2481cc);
-    --danger: #e5484d;
-    --radius: 14px;
+    --page: #f4f4f5;
+    --bg: #ffffff;
+    --text: #111111;
+    --hint: #7a7a80;
+    --card: var(--bg);
+    --line: #e7e7ea;                 /* рамки карточек */
+    --sep: #ececee;                  /* линии между строками */
+    --soft: #f1f1f3;                 /* круг под значком, чипы */
+    --accent: #111111;               /* главные кнопки — чёрные */
+    --accent-text: #ffffff;
+    --brand: #e2231a;                /* красный Yaponamama */
+    --brand-soft: #fdecec;
+    --link: #111111;
+    --danger: #e2231a;
+    --ok: #1f9d55;
+    --radius: 20px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-tg]) {
-      --bg: #17181c; --text: #f2f2f2; --hint: #8d8f96; --card: #23252b;
-    }
+  :root[data-theme="dark"] {
+    --page: #0b0b0c; --bg: #18181b; --text: #f4f4f5; --hint: #9a9aa2; --line: #2a2a2f; --sep: #26262b;
+    --soft: #26262b; --accent: #f4f4f5; --accent-text: #111111; --brand-soft: #3a1513; --link: #f4f4f5;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  html, body { margin: 0; background: var(--page); color: var(--text); }
   body {
-    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+    font-feature-settings: "cv11", "ss01";   /* у Inter — формы букв ближе к SF */
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
   }
-  button { font: inherit; color: inherit; cursor: pointer; }
-  #app { max-width: 640px; margin: 0 auto; padding: 16px 16px 104px; }
-  h1 { font-size: 24px; line-height: 1.2; margin: 4px 0 6px; }
-  h2 { font-size: 17px; margin: 28px 0 12px; }
-  .sub { color: var(--hint); margin: 0 0 20px; }
+  button { font: inherit; color: inherit; cursor: pointer; letter-spacing: inherit; }
+  button:active { opacity: .6; }
+  #app { max-width: 640px; margin: 0 auto; padding: 12px 16px 112px; }
+  h1 { font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -0.025em; margin: 12px 2px 14px; }
+  h2 { font-size: 13px; font-weight: 400; text-transform: uppercase; letter-spacing: .02em;
+       color: var(--hint); margin: 26px 16px 8px; }
+  .sub { color: var(--hint); margin: 0 4px 20px; font-size: 15px; }
 
   .hero {
     border-radius: var(--radius); overflow: hidden; position: relative; margin-bottom: 16px;
-    background: var(--card); aspect-ratio: 16 / 9;
+    background: var(--bg); aspect-ratio: 16 / 9;
   }
   .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tile {
-    background: var(--card); border: 0; border-radius: var(--radius);
-    padding: 16px; text-align: left; min-height: 84px;
-    display: flex; flex-direction: column; justify-content: space-between;
-  }
-  .tile.wide { grid-column: 1 / -1; background: var(--accent); color: var(--accent-text); }
-  .tile .big { font-size: 18px; font-weight: 600; }
-  .tile small { opacity: .75; }
+  svg.i { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8;
+          stroke-linecap: round; stroke-linejoin: round; }
 
-  .list { display: flex; flex-direction: column; gap: 8px; }
+  /* шапка: название слева, профиль справа */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+         margin: -12px -16px 0; padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .top .brand { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .top .me { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .top .ava { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--soft);
+              display: grid; place-items: center; color: var(--hint); }
+  .top .me b { display: block; font-weight: 600; font-size: 16px; line-height: 1.2; }
+  .top .me small { display: block; color: var(--hint); font-size: 14px; }
+  .hello { margin: 26px 2px 2px; font-size: 28px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; }
+  .hello + .sub { margin-top: 4px; }
+
+  /* карточки-цифры в два столбца */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat { display: flex; align-items: center; gap: 12px; background: var(--bg); border: 1px solid var(--line);
+          border-radius: 18px; padding: 16px 14px; text-align: left; min-width: 0; }
+  .stat .ci { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--soft);
+              display: grid; place-items: center; }
+  .stat.alert .ci { background: var(--brand-soft); color: var(--brand); }
+  .stat .k { display: block; color: var(--hint); font-size: 14px; line-height: 1.2; }
+  .stat .v { display: block; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin-top: 3px;
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat.alert .v { color: var(--brand); }
+  .stat .d { display: block; color: var(--hint); font-size: 13px; margin-top: 1px; }
+  .stat .d:empty { display: none; }
+
+  /* карточка-группа со строками */
+  .menu { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+          padding: 4px 16px; margin-bottom: 14px; }
+  .menu .mh { display: flex; align-items: center; gap: 10px; padding: 14px 0 6px; font-size: 19px; font-weight: 700;
+              letter-spacing: -0.02em; }
+  .mi {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px;
+    padding: 12px 0; border: 0; background: none; text-align: left;
+  }
+  .mi + .mi { border-top: 1px solid var(--sep); }
+  .mi .ic { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--soft);
+            display: grid; place-items: center; }
+  .mi .tx { flex: 1; min-width: 0; }
+  .mi .tt { display: block; font-weight: 500; }
+  .mi .st { display: block; color: var(--hint); font-size: 14px; margin-top: 1px; }
+  .mi .tag, .tag { flex: none; font-size: 14px; padding: 4px 10px; border-radius: 999px;
+                   background: var(--brand-soft); color: var(--brand); }
+  .tag.gray { background: var(--soft); color: var(--hint); }
+  .mi .chev { color: var(--hint); opacity: .7; width: 18px; height: 18px; }
+  .mi.off { opacity: .5; }
+
+  /* нижняя панель вкладок */
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bg);
+          border-top: 1px solid var(--line); padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); }
+  .tabs[hidden] { display: none; }
+  .tabs .in { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 620px; margin: 0 auto; }
+  .tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; border: 0; background: none;
+                 padding: 8px 4px; border-radius: 16px; color: var(--hint); font-size: 13px; }
+  .tabs button.on { background: var(--accent); color: var(--accent-text); }
+
+  .list { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 16px; }
   .row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    width: 100%; background: var(--card); border: 0; border-radius: 12px;
-    padding: 15px 16px; text-align: left;
+    width: 100%; min-height: 56px; background: none; border: 0; padding: 14px 0; text-align: left;
   }
-  .row::after { content: "›"; color: var(--hint); font-size: 22px; line-height: 1; }
+  .row + .row { border-top: 1px solid var(--sep); }
+  .row::after { content: ""; flex: none; width: 7px; height: 7px; margin-right: 4px; border-top: 1.8px solid var(--hint);
+                border-right: 1.8px solid var(--hint); transform: rotate(45deg); opacity: .7; }
 
   .rich { white-space: pre-line; background: var(--card); border-radius: var(--radius); padding: 16px; }
   .card { background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
@@ -75,9 +143,10 @@
   .label .opt { font-weight: 400; color: var(--hint); font-size: 13px; }
   .hint { color: var(--hint); font-size: 13px; margin-top: 6px; }
   input, textarea {
-    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1.5px solid transparent;
-    background: var(--card); color: var(--text); font: inherit; outline: none; appearance: none;
+    width: 100%; min-height: 50px; padding: 13px 16px; border-radius: 12px; border: 1.5px solid transparent;
+    background: var(--bg); color: var(--text); font: inherit; outline: none; appearance: none;
   }
+  input::placeholder, textarea::placeholder { color: var(--hint); opacity: .7; }
   textarea { min-height: 84px; resize: vertical; }
   input:focus, textarea:focus { border-color: var(--accent); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -93,15 +162,19 @@
   .consent input { width: 22px; height: 22px; flex: none; margin: 1px 0 0; appearance: auto; accent-color: var(--accent); }
 
   .bottom {
-    position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg);
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    box-shadow: 0 -1px 0 rgba(127, 127, 127, .18);
+    position: fixed; left: 0; right: 0; bottom: 0; background: var(--page);
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+    box-shadow: 0 -0.5px 0 var(--sep);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .bottom { background: color-mix(in srgb, var(--page) 80%, transparent);
+              -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
   }
   .bottom[hidden] { display: none; }
   .btn {
-    display: block; width: 100%; max-width: 608px; margin: 0 auto; padding: 15px;
-    border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-text);
-    font-weight: 600;
+    display: block; width: 100%; max-width: 608px; min-height: 52px; margin: 0 auto; padding: 14px;
+    border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-text);
+    font-size: 17px; font-weight: 600;
   }
   .toast {
     position: fixed; left: 16px; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom));
@@ -110,14 +183,19 @@
     opacity: 0; transform: translateY(8px); transition: .2s; pointer-events: none;
   }
   .toast.show { opacity: 1; transform: none; }
-  .toast.ok { background: #1f9d55; }
+  .toast.ok { background: var(--ok); }
 
   /* приложение сотрудника */
   .tile.off { opacity: .5; }
   .tile .badge { font-size: 12px; opacity: .8; }
-  .who { background: var(--card); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
-  .who .name { font-weight: 600; font-size: 18px; }
-  .who .meta { color: var(--hint); font-size: 14px; }
+  /* карточка «кто я» — как профиль Apple ID: круг с инициалами, имя, должность */
+  .who { display: flex; align-items: center; gap: 14px; background: var(--bg); border-radius: var(--radius);
+         padding: 14px 16px; margin: 8px 0 20px; }
+  .who .ava { flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+              background: linear-gradient(180deg, #a5abb6, #858a94); color: #fff; font-size: 22px; font-weight: 600; }
+  .who .name { font-weight: 600; font-size: 20px; letter-spacing: -0.02em; }
+  .who .meta { color: var(--hint); font-size: 15px; }
+  .greet { color: var(--hint); font-size: 15px; margin: 4px 4px 0; }
   .day { display: flex; justify-content: space-between; align-items: center; background: var(--card);
          border-radius: 12px; padding: 13px 16px; margin-bottom: 8px; }
   .day.today { outline: 2px solid var(--accent); }
@@ -145,11 +223,28 @@
   .check .state { display: block; color: var(--hint); font-size: 12px; margin-top: 3px; }
   .check .confirm { flex: none; border: 0; border-radius: 8px; padding: 6px 10px; background: var(--accent);
                     color: var(--accent-text); font-size: 13px; font-weight: 600; }
+
+  /* единый вид внутренних экранов: белые карточки с тонкой рамкой */
+  .card, .item, .day, .check, .rich, .note, .who { border: 1px solid var(--line); }
+  .card, .rich, .who { border-radius: var(--radius); }
+  .item, .day, .check, .note { border-radius: 16px; }
+  .day { min-height: 54px; }
+  .day.today { outline: none; border: 1.5px solid var(--text); }
+  input, textarea { border: 1px solid var(--line); }
+  input:focus, textarea:focus { border-color: var(--text); }
+  .chip { background: var(--bg); border: 1px solid var(--line); }
+  .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .btn { border-radius: 999px; }
+  .bar > div { background: var(--brand); }
+  .bottom { background: var(--bg); box-shadow: 0 -1px 0 var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  /* когда видна панель вкладок — место под неё */
+  body.has-tabs #app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div class="bottom" id="bottom" hidden><button class="btn" id="bottomBtn"></button></div>
+<nav class="tabs" id="tabs" hidden><div class="in" id="tabsIn"></div></nav>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -166,6 +261,16 @@ if (tg) {
   tg.ready();
   tg.expand();
 }
+// тёмная тема — как в Telegram (или как в системе, если открыто в браузере)
+function applyTheme() {
+  const dark = tg ? tg.colorScheme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  try {
+    if (tg) { tg.setHeaderColor(dark ? "#18181b" : "#ffffff"); tg.setBackgroundColor(dark ? "#0b0b0c" : "#f4f4f5"); }
+  } catch (e) { /* старый клиент Telegram */ }
+}
+applyTheme();
+if (tg) tg.onEvent("themeChanged", applyTheme);
 
 const t = (k) => (D.texts[lang] && D.texts[lang][k]) || D.texts.ru[k] || k;
 const app = document.getElementById("app");
@@ -223,7 +328,7 @@ function go(screen) {
 }
 
 function back() {
-  show(stack.pop() || home);
+  show(stack.pop() || (STAFF ? staffHome : home));
 }
 
 function show(screen) {
@@ -231,8 +336,53 @@ function show(screen) {
   app.replaceChildren();
   setBottom(null);
   screen();
+  renderTabs();
   window.scrollTo(0, 0);
   if (tg) stack.length ? tg.BackButton.show() : tg.BackButton.hide();
+}
+
+// ---------- вкладки внизу (приложение сотрудника) ----------
+let TABS = null;   // [{ key, icon, label, screen }]
+function renderTabs() {
+  const nav = document.getElementById("tabs");
+  const visible = !!TABS && stack.length === 0 && bottom.hidden;   // только на главных экранах вкладок
+  nav.hidden = !visible;
+  document.body.classList.toggle("has-tabs", visible);
+  if (!visible) return;
+  document.getElementById("tabsIn").replaceChildren(...TABS.map((tb) =>
+    el("button", { class: current === tb.screen ? "on" : "", onclick: () => { stack.length = 0; show(tb.screen); } },
+      icon(tb.icon), el("span", { text: tb.label() }))));
+}
+
+// контурные значки (стиль Lucide), 24×24
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/>',
+  calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  book: '<path d="M4 19V5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H20"/>',
+  more: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  swap: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  wallet: '<rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M16 15h2"/>',
+  megaphone: '<path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M17 9a4 4 0 0 1 0 6"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 6.5 8.5 6 8.5-6"/>',
+  cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  briefcase: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m21 16-5-5-9 9"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
+};
+function icon(name, cls = "i") {
+  const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("class", cls);
+  s.innerHTML = ICONS[name] || "";
+  return s;
 }
 
 if (tg) tg.BackButton.onClick(back);
@@ -245,23 +395,42 @@ const vacancy = (k) => D.vacancies.find((v) => v.key === k);
 
 // ---------- экраны ----------
 
+/** Названия из texts часто начинаются с эмодзи — в новом дизайне вместо них контурные значки. */
+const plain = (s) => String(s).replace(/^[\p{Extended_Pictographic}\p{Regional_Indicator}️‍\s/]+/u, "");
+
+/** Строка карточки: значок в сером круге, название, подпись, метка справа, стрелка. */
+function mi({ ic, title, sub, tag, tagGray, onclick, off }) {
+  return el("button", { class: "mi" + (off ? " off" : ""), onclick },
+    el("span", { class: "ic" }, icon(ic)),
+    el("span", { class: "tx" }, el("span", { class: "tt", text: plain(title) }), sub && el("span", { class: "st", text: sub })),
+    tag && el("span", { class: "tag" + (tagGray ? " gray" : ""), text: tag }),
+    icon("chev", "i chev"));
+}
+/** Карточка-группа; head — заголовок с значком внутри карточки (как «Задачи на сегодня»). */
+function menu(head, ...items) {
+  const h = head && el("div", { class: "mh" }, icon(head.ic), el("span", { text: head.title }));
+  return el("div", { class: "menu" }, h, items.flat().filter(Boolean));
+}
+function stat({ ic, k, v, d, alert, onclick }) {
+  return el("button", { class: "stat" + (alert ? " alert" : ""), onclick },
+    el("span", { class: "ci" }, icon(ic)),
+    el("span", { style: "min-width:0" }, el("span", { class: "k", text: k }), el("span", { class: "v", text: v }),
+      el("span", { class: "d", text: d || "" })));
+}
+
 function home() {
-  if (D.gallery.length) app.append(el("div", { class: "hero" }, el("img", { src: D.gallery[0], alt: "" })));
+  if (D.gallery.length) app.append(el("div", { class: "hero", style: "margin-top:4px" }, el("img", { src: D.gallery[0], alt: "" })));
   app.append(
-    el("h1", { text: "Yaponamama 🍣" }),
+    el("div", { class: "hello", text: "Yaponamama" }),
     el("p", { class: "sub", text: t("app_tagline") }),
-    el("div", { class: "tiles" },
-      el("button", { class: "tile wide", onclick: () => go(branches) },
-        el("span", { class: "big", text: t("menu_vacancies") }),
-        el("small", { text: `${t("app_open_vacancies")}: ${D.vacancies.length}` })),
-      el("button", { class: "tile", onclick: () => go(about) }, el("span", { class: "big", text: t("menu_about") })),
-      el("button", { class: "tile", onclick: () => go(gallery) }, el("span", { class: "big", text: t("menu_gallery") })),
-      el("button", { class: "tile", onclick: () => go(contacts) }, el("span", { class: "big", text: t("menu_contacts") })),
-      el("button", {
-        class: "tile",
-        onclick: () => { lang = lang === "ru" ? "uz" : "ru"; show(home); },
-      }, el("span", { class: "big", text: t("menu_lang") })),
-    ),
+    menu(null, mi({ ic: "briefcase", title: t("menu_vacancies"),
+                    sub: `${t("app_open_vacancies")}: ${D.vacancies.length}`, onclick: () => go(branches) })),
+    menu(null,
+      mi({ ic: "info", title: t("menu_about"), onclick: () => go(about) }),
+      mi({ ic: "image", title: t("menu_gallery"), onclick: () => go(gallery) }),
+      mi({ ic: "pin", title: t("menu_contacts"), onclick: () => go(contacts) }),
+      mi({ ic: "globe", title: t("menu_lang"), tag: lang === "ru" ? "Русский" : "O‘zbekcha", tagGray: true,
+           onclick: () => { lang = lang === "ru" ? "uz" : "ru"; show(home); } })),
   );
 }
 
@@ -534,7 +703,7 @@ function errText(e) {
 
 /** Экран с загрузкой: показывает «…», затем вызывает render(data) или текст ошибки. */
 function loading(title, load, render) {
-  app.append(el("h1", { text: title }));
+  app.append(el("h1", { text: plain(title) }));
   const box = el("div", { class: "loading", text: "…" });
   app.append(box);
   const screen = current;
@@ -554,29 +723,101 @@ function dayLabel(iso) {
 const dotsDate = (iso) => iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}` : "";
 const shiftLabel = (s) => s.day_off ? t("day_off") : `${s.start}–${s.end}`;
 
-function staffHome() {
-  app.append(
-    el("div", { class: "who" },
-      el("div", { class: "name", text: ME.name }),
-      el("div", { class: "meta", text: `${ME.position} · 📍 ${ME.branch_name[lang]}` })),
-    el("div", { class: "tiles" },
-      ME.has_adaptation && el("button", { class: "tile wide", onclick: () => go(adaptMine) },
-        el("span", { class: "big", text: t("ad_tile_mine") })),
-      ME.trainees > 0 && el("button", { class: "tile wide", onclick: () => go(adaptTrainees) },
-        el("span", { class: "big", text: t("ad_tile_trainees") }), el("small", { text: String(ME.trainees) })),
-      el("button", { class: "tile wide", onclick: () => go(staffSchedule) }, el("span", { class: "big", text: t("sa_schedule") })),
-      el("button", { class: "tile", onclick: () => go(staffSwap) }, el("span", { class: "big", text: t("sa_swap") })),
-      el("button", { class: "tile", onclick: () => go(staffLeave) },
-        el("span", { class: "big", text: t("sa_leave") }),
-        el("small", { text: `${t("sa_vacation_left")}: ${ME.vacation_left} ${t("sa_days")}` })),
-      el("button", { class: "tile off", onclick: () => go(staffSalary) },
-        el("span", { class: "big", text: t("sa_salary") }), el("span", { class: "badge", text: t("sa_soon") })),
-      el("button", { class: "tile", onclick: () => go(staffNews) }, el("span", { class: "big", text: t("sa_news") })),
-      el("button", { class: "tile", onclick: () => go(staffKnowledge) }, el("span", { class: "big", text: t("sa_kb") })),
-      el("button", { class: "tile", onclick: () => go(staffWrite) }, el("span", { class: "big", text: t("sa_write") })),
-    ),
-  );
+const GREET = {
+  ru: ["Доброй ночи", "Доброе утро", "Добрый день", "Добрый вечер"],
+  uz: ["Xayrli tun", "Xayrli tong", "Xayrli kun", "Xayrli kech"],
+};
+const greeting = () => GREET[lang][[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 0][new Date().getHours()]];
+const firstName = () => String(ME.name).trim().split(/\s+/)[0] || ME.name;
+const L = (ru, uz) => (lang === "uz" ? uz : ru);   // короткие подписи нового дизайна
+
+function staffTop() {
+  return el("div", { class: "top" },
+    el("div", { class: "brand", text: "Yaponamama" }),
+    el("div", { class: "me" },
+      el("span", { class: "ava" }, icon("user")),
+      el("span", { style: "min-width:0" }, el("b", { text: ME.position }), el("small", { text: firstName() }))));
 }
+
+/** Ближайшая смена (сегодняшняя — если ещё актуальна) по ответу /api/schedule. */
+function nextShift(shifts) {
+  const now = todayIso();
+  return shifts.find((s) => !s.day_off && s.date >= now) || null;
+}
+/** [крупно, мелко]: «12:00» и «Сегодня» / «Вт, 18.11» */
+function shiftWhen(s) {
+  if (!s) return [L("Нет", "Yo‘q"), L("в графике", "jadvalda")];
+  return [s.start, s.date === todayIso() ? L("Сегодня", "Bugun") : dayLabel(s.date)];
+}
+
+function staffHome() {
+  const shiftStat = stat({ ic: "clock", k: L("Следующая смена", "Keyingi smena"), v: "…", onclick: () => go(staffSchedule) });
+  const todayBox = el("div");
+  app.append(
+    staffTop(),
+    el("div", { class: "hello", text: `${greeting()}, ${firstName()}` }),
+    el("p", { class: "sub", text: L("Что важно сегодня.", "Bugun nima muhim.") }),
+    el("div", { class: "stats" },
+      shiftStat,
+      stat({ ic: "sun", k: t("sa_vacation_left"), v: `${ME.vacation_left} ${t("sa_days")}`, onclick: () => go(staffLeave) })),
+    todayBox,
+    menu({ ic: "briefcase", title: L("Быстрые действия", "Tezkor amallar") },
+      mi({ ic: "swap", title: t("sa_swap"), onclick: () => go(staffSwap) }),
+      mi({ ic: "sun", title: t("sa_leave"), onclick: () => go(staffLeave) }),
+      mi({ ic: "mail", title: t("sa_write"), onclick: () => go(staffWrite) })),
+  );
+  // «Сегодня»: смена + обучение; график подгружается после показа экрана
+  const drawToday = (shifts) => {
+    const now = todayIso();
+    const today = shifts && shifts.find((s) => s.date === now);
+    const next = shifts ? nextShift(shifts) : null;
+    const [v, d] = shifts ? shiftWhen(next) : ["—", ""];
+    shiftStat.querySelector(".v").textContent = v;
+    shiftStat.querySelector(".d").textContent = d;
+    todayBox.replaceChildren(menu({ ic: "calendar", title: L("Сегодня", "Bugun") },
+      mi({ ic: "clock", onclick: () => go(staffSchedule),
+           title: !shifts ? t("sa_schedule") : today && !today.day_off ? shiftLabel(today)
+             : today ? t("day_off") : L("Смены нет в графике", "Jadvalda smena yo‘q"),
+           sub: dayLabel(now) + (today && !today.day_off ? ` · ${L("моя смена", "mening smenam")}` : "") }),
+      ME.has_adaptation && mi({ ic: "cap", title: t("ad_tile_mine"), sub: L("Темы на сегодня и отметки наставника", "Bugungi mavzular"),
+                                onclick: () => go(adaptMine) }),
+      ME.trainees > 0 && mi({ ic: "users", title: t("ad_tile_trainees"), tag: String(ME.trainees), tagGray: true,
+                              onclick: () => go(adaptTrainees) })));
+  };
+  drawToday(undefined);
+  const screen = current;
+  api("/api/schedule").then(({ shifts }) => { if (current === screen) drawToday(shifts); })
+    .catch(() => { if (current === screen) drawToday(null); });
+}
+
+function staffLearn() {
+  app.append(el("h1", { text: L("Обучение", "O‘qish") }),
+    menu(null,
+      ME.has_adaptation && mi({ ic: "cap", title: t("ad_tile_mine"), onclick: () => go(adaptMine) }),
+      ME.trainees > 0 && mi({ ic: "users", title: t("ad_tile_trainees"), tag: String(ME.trainees), tagGray: true,
+                              onclick: () => go(adaptTrainees) }),
+      mi({ ic: "book", title: t("sa_kb"), sub: L("Стандарты сервиса, внешний вид, правила", "Servis standartlari, qoidalar"),
+           onclick: () => go(staffKnowledge) })));
+}
+
+function staffMore() {
+  app.append(el("h1", { text: L("Ещё", "Yana") }),
+    menu(null,
+      mi({ ic: "swap", title: t("sa_swap"), onclick: () => go(staffSwap) }),
+      mi({ ic: "sun", title: t("sa_leave"), sub: `${t("sa_vacation_left")}: ${ME.vacation_left} ${t("sa_days")}`,
+           onclick: () => go(staffLeave) }),
+      mi({ ic: "wallet", title: t("sa_salary"), tag: t("sa_soon"), tagGray: true, off: true, onclick: () => go(staffSalary) })),
+    menu(null,
+      mi({ ic: "megaphone", title: t("sa_news"), onclick: () => go(staffNews) }),
+      mi({ ic: "mail", title: t("sa_write"), onclick: () => go(staffWrite) })));
+}
+
+const STAFF_TABS = [
+  { icon: "home", label: () => L("Обзор", "Asosiy"), screen: staffHome },
+  { icon: "calendar", label: () => L("График", "Jadval"), screen: staffSchedule },
+  { icon: "book", label: () => L("Обучение", "O‘qish"), screen: staffLearn },
+  { icon: "more", label: () => L("Ещё", "Yana"), screen: staffMore },
+];
 
 function staffSchedule() {
   loading(t("sa_schedule"), () => api("/api/schedule"), ({ shifts }) => {
@@ -855,6 +1096,7 @@ async function startStaff() {
   try {
     ME = await api("/api/me");
     if (D.texts[ME.lang]) lang = ME.lang;
+    TABS = STAFF_TABS;
     show(staffHome);
   } catch (e) {
     app.replaceChildren(el("p", { class: "note", text: errText(e) }));
