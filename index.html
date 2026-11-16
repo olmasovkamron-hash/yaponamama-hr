@@ -292,6 +292,30 @@
   input[type="search"] { -webkit-appearance: none; padding-left: 44px;
     background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a7a80' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 14px center / 20px; }
 
+  /* мини-тест */
+  .qhead { display: flex; justify-content: space-between; gap: 12px; color: var(--hint); font-size: 14px; margin: -4px 2px 0; }
+  .qhead + .bar { height: 6px; margin: 10px 0 20px; background: var(--soft); }
+  .qq { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; margin: 0 2px 18px; }
+  .qopts { display: flex; flex-direction: column; gap: 10px; }
+  .qo { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 14px 16px; text-align: left;
+        background: var(--bg); border: 1.5px solid var(--line); border-radius: 16px; font-size: 16px; line-height: 1.35; }
+  .qo:disabled { cursor: default; opacity: 1; }
+  .qo:disabled:not(.good):not(.bad) { opacity: .55; }
+  .qo .qm { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1.8px solid var(--line);
+            display: grid; place-items: center; }
+  .qo.good { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--bg)); }
+  .qo.good .qm { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .qo.bad { border-color: var(--brand); background: var(--brand-soft); }
+  .qo.bad .qm { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .qwhy { margin-top: 14px; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px;
+          font-size: 15px; line-height: 1.45; color: var(--text); }
+  .qres { text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+          padding: 28px 18px 22px; margin-bottom: 14px; }
+  .qscore { width: 120px; height: 120px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center;
+            font-size: 34px; font-weight: 700; letter-spacing: -0.02em; background: var(--brand-soft); color: var(--brand); }
+  .qres.ok .qscore { background: color-mix(in srgb, var(--ok) 14%, var(--bg)); color: var(--ok); }
+  .qres .qt { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+
   /* когда видна панель вкладок — место под неё */
   body.has-tabs #app { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 </style>
@@ -427,6 +451,8 @@ const ICONS = {
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/>',
   chev: '<path d="m9 6 6 6-6 6"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7"/>',
+  quiz: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.6M12 17v.01"/>',
+  x: '<path d="M7 7l10 10M17 7 7 17"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   briefcase: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.01"/>',
@@ -907,6 +933,8 @@ function staffLearn() {
       p.onclick = () => { stack.length = 0; show(staffAdapt); };   // → вкладка «Адаптация»
       app.append(p, todayCard(mine, reload));
     }
+    const qc = quizCard(kb.articles);
+    if (qc) app.append(qc);
     if (mine) app.append(el("h2", { text: L("База знаний", "Bilimlar bazasi") }));
     const box = el("div");
     app.append(box);
@@ -1109,6 +1137,8 @@ function progressBlock(a) {
       el("span", { text: `${t("ad_mentor")}: ${a.mentor || t("ad_no_mentor")}` }),
       st.articles.length ? el("span", { text: L(`Стандарты: ${st.read.length} из ${st.articles.length}`,
                                                  `Standartlar: ${st.read.length}/${st.articles.length}`) }) : null,
+      st.quiz_total && st.quiz_total.length ? el("span", { text: L(`Тесты: сдано ${st.quiz_passed.length} из ${st.quiz_total.length}`,
+                                                 `Testlar: ${st.quiz_passed.length}/${st.quiz_total.length}`) }) : null,
       at ? el("span", { text: L(`Аттестация №${at[0]}: день ${at[1]} (через ${Math.max(at[1] - a.day, 0)} дн.)`,
                                 `${at[0]}-attestatsiya: ${at[1]}-kun (${Math.max(at[1] - a.day, 0)} kundan keyin)`) }) : null),
     a.lagging ? el("div", { class: "tag", style: "display:inline-block;margin-top:10px", text: plain(t("ad_lagging")) }) : null);
@@ -1154,11 +1184,96 @@ function readMinutes(body) {
   return Math.max(1, Math.round(String(body || "").split(/\s+/).length / 160));
 }
 
-/** Строка статьи в списке: значок, название, «N мин», отметка «изучено». */
+const quizPassed = (a) => !!(a.quiz_best && a.quiz_best.best >= 0.8 * a.quiz_best.total);
+const quizScore = (a) => a.quiz_best ? `${a.quiz_best.best}/${a.quiz_best.total}` : "";
+
+/** Строка статьи в списке: значок, название, «N мин», результат теста. */
 function articleRow(a, sub) {
+  const test = a.quiz ? (a.quiz_best ? ` · ${L("тест", "test")} ${quizScore(a)}` : ` · ${L("есть тест", "test bor")}`) : "";
   return mi({ ic: a.read ? "check" : "book", title: a.title[lang],
-              sub: sub || L(`${readMinutes(a.body[lang])} мин чтения`, `${readMinutes(a.body[lang])} daqiqa`),
+              sub: sub || L(`${readMinutes(a.body[lang])} мин чтения`, `${readMinutes(a.body[lang])} daqiqa`) + test,
               onclick: () => go(() => staffArticle(a.id)) });
+}
+
+/** Карточка «Мини-тесты»: сначала несданные. */
+function quizCard(articles) {
+  const list = articles.filter((a) => a.quiz).sort((x, y) => quizPassed(x) - quizPassed(y));
+  if (!list.length) return null;
+  const done = list.filter(quizPassed).length;
+  return menu({ ic: "quiz", title: L(`Мини-тесты · сдано ${done} из ${list.length}`, `Mini-testlar · ${done}/${list.length}`) },
+    list.map((a) => mi({ ic: quizPassed(a) ? "check" : "quiz", title: a.title[lang],
+      sub: L(`${a.quiz} вопросов`, `${a.quiz} ta savol`) + (a.quiz_best ? ` · ${L("лучший", "eng yaxshi")} ${quizScore(a)}` : ""),
+      tag: quizPassed(a) ? L("сдан", "topshirildi") : null, tagGray: true,
+      onclick: () => go(() => staffQuiz(a.id)) })));
+}
+
+const shuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/** Мини-тест: по одному вопросу, сразу видно правильный ответ и почему. */
+function staffQuiz(id) {
+  const a = kbArticle(id);
+  loading(L("Мини-тест", "Mini-test"), () => api(`/api/quiz/${encodeURIComponent(id)}`), ({ questions }) => {
+    const answers = [];
+    const box = el("div");
+    app.append(box);
+    const ask = (i) => {
+      const q = questions[i];
+      const opts = shuffle(q.a.map((x, idx) => ({ x, idx })));
+      const why = el("div", { class: "qwhy", hidden: true });
+      const buttons = opts.map((o) => el("button", { class: "qo", onclick: () => pick(o) },
+        el("span", { class: "qm" }), el("span", { text: o.x[lang] })));
+      const pick = (o) => {
+        if (answers.length > i) return;   // ответ уже дан
+        answers.push(o.idx);
+        buttons.forEach((b, k) => {
+          b.disabled = true;
+          const right = opts[k].idx === 0, chosen = opts[k] === o;
+          if (right) { b.classList.add("good"); b.querySelector(".qm").replaceChildren(icon("check", "i s")); }
+          else if (chosen) { b.classList.add("bad"); b.querySelector(".qm").replaceChildren(icon("x", "i s")); }
+        });
+        haptic(o.idx === 0 ? "success" : "error");
+        why.replaceChildren(el("b", { text: o.idx === 0 ? L("Верно! ", "To‘g‘ri! ") : L("Не совсем. ", "Unchalik emas. ") }), q.why[lang]);
+        why.hidden = false;
+        const last = i === questions.length - 1;
+        setBottom(last ? L("Показать результат", "Natijani ko‘rish") : L("Дальше", "Keyingisi"), () => (last ? finish() : ask(i + 1)));
+      };
+      box.replaceChildren(
+        el("div", { class: "qhead" },
+          el("span", { text: a ? a.title[lang] : "" }),
+          el("span", { text: L(`${i + 1} из ${questions.length}`, `${i + 1} / ${questions.length}`) })),
+        el("div", { class: "bar" }, el("div", { style: `width:${Math.round(100 * i / questions.length)}%` })),
+        el("div", { class: "qq", text: q.q[lang] }),
+        el("div", { class: "qopts" }, buttons), why);
+      setBottom(null);
+      renderTabs();
+      window.scrollTo(0, 0);
+    };
+    const finish = async () => {
+      setBottom(null);
+      let res;
+      try { res = await api(`/api/quiz/${encodeURIComponent(id)}/result`, { answers }); }
+      catch (e) { toast(errText(e)); setBottom(L("Отправить ещё раз", "Qayta yuborish"), finish); return; }
+      if (a) { a.quiz_best = res.best; if (res.passed) a.read = true; }
+      const pct = res.score / res.total;
+      app.querySelector("h1").textContent = L("Результат", "Natija");
+      box.replaceChildren(
+        el("div", { class: "qres" + (res.passed ? " ok" : "") },
+          el("div", { class: "qscore", text: `${res.score}/${res.total}` }),
+          el("div", { class: "qt", text: pct === 1 ? L("Отлично! Всё верно 🎉", "A’lo! Hammasi to‘g‘ri 🎉")
+                                       : res.passed ? L("Хорошо! Тест сдан", "Yaxshi! Test topshirildi")
+                                       : L("Нужно повторить", "Takrorlash kerak") }),
+          el("div", { class: "sub", style: "margin:6px 0 0", text: res.passed
+            ? L("Стандарт отмечен как изученный ✓", "Standart o‘rganildi deb belgilandi ✓")
+            : L(`Для зачёта нужно ${Math.ceil(0.8 * res.total)} из ${res.total}. Перечитайте статью и попробуйте ещё раз.`,
+                `O‘tish uchun ${res.total} tadan ${Math.ceil(0.8 * res.total)} ta kerak. Maqolani qayta o‘qing va yana urinib ko‘ring.`) })),
+        menu(null,
+          mi({ ic: "quiz", title: L("Пройти ещё раз", "Yana bir bor"), onclick: () => show(() => staffQuiz(id)) }),
+          a && mi({ ic: "book", title: L("Перечитать статью", "Maqolani qayta o‘qish"), onclick: () => show(() => staffArticle(id)) })));
+      haptic(res.passed ? "success" : "warning");
+      setBottom(L("Готово", "Tayyor"), back);
+    };
+    ask(0);
+  });
 }
 
 /** Кнопки-статьи под пунктом плана. */
@@ -1293,6 +1408,9 @@ function staffArticle(id) {
       el("summary", {}, el("span", { text: capitalize(p.title) }), icon("chev", "i chev")), content));
   });
   const extra = [];
+  if (a.quiz) extra.push(mi({ ic: quizPassed(a) ? "check" : "quiz", title: L("Мини-тест", "Mini-test"),
+    sub: L(`${a.quiz} вопросов`, `${a.quiz} ta savol`) + (a.quiz_best ? ` · ${L("лучший", "eng yaxshi")} ${quizScore(a)}` : ""),
+    tag: quizPassed(a) ? L("сдан", "topshirildi") : null, tagGray: true, onclick: () => go(() => staffQuiz(a.id)) }));
   if (a.pdf) extra.push(mi({ ic: "image", title: t("sa_kb_pdf"), onclick: async () => {
     try {
       await api(`/api/knowledge/${encodeURIComponent(a.id)}/send`, {});
@@ -1305,7 +1423,11 @@ function staffArticle(id) {
   if (next) extra.push(mi({ ic: "chev", title: next.title[lang], sub: L("Следующая статья", "Keyingi maqola"),
                             onclick: () => { show(() => staffArticle(next.id)); } }));
   if (extra.length) app.append(el("div", { style: "height:6px" }), menu(null, extra));
-  if (realArticle(a)) {
+  if (a.quiz && !quizPassed(a)) {
+    // главный шаг после чтения — тест: сдал → статья сама отмечается «Изучено»
+    setBottom(L(`Проверить себя — тест (${a.quiz} вопр.)`, `O‘zingizni tekshiring — test (${a.quiz} savol)`),
+      () => go(() => staffQuiz(a.id)));
+  } else if (realArticle(a)) {
     setBottom(a.read ? L("✓ Изучено — снять отметку", "✓ O‘rganildi — belgini olish") : L("Я изучил(а) — отметить", "O‘rgandim — belgilash"),
       async () => {
         try {
